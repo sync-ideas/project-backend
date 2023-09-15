@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ESNext",
+    "sourceMap": true,
+    "outDir": "build",
+    "allowJs": true,
+    //"allowImportingTsExtensions": true,
+    //"noEmit": true
+  },
+  "include": ["src/**/*"]
+}
