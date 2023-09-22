@@ -11,4 +11,11 @@ authRouter.get(
     AuthController.get(req, res);
   })
 
+authRouter.post(
+  '/checkemail',
+  (req, res) => {
+    AuthController.checkEmail(req, res);
+  }
+)
+
 export default authRouter
