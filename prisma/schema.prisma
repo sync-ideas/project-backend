@@ -16,3 +16,12 @@ model users {
   role      String   @default("teacher")
   active    Boolean  @default(true)
 }
+
+model Student {
+  id       String   @unique
+  name     String
+  subjects String[]
+  active   Boolean  @default(true)
+
+  @@map("students")
+}
