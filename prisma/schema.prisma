@@ -13,4 +13,6 @@ model users {
   email     String   @unique
   name      String
   password  String
+  role      String   @default("teacher")
+  active    Boolean  @default(true)
 }
