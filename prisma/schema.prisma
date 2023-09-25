@@ -7,7 +7,7 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model users {
+model User {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   email     String   @unique
@@ -15,6 +15,8 @@ model users {
   password  String
   role      String   @default("teacher")
   active    Boolean  @default(true)
+
+  @@map("users")
 }
 
 model Student {
@@ -24,4 +26,34 @@ model Student {
   active   Boolean  @default(true)
 
   @@map("students")
+}
+
+enum Role {
+  USER
+  TEACHER
+}
+
+model Course {
+  id        Int      @id @default(autoincrement())
+  nivel     String  
+  number    Int
+  letter    String
+  subjects  Subject[]  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("courses")
+}
+
+model Subject {
+  id        Int      @id @default(autoincrement())
+  name      String
+  nivel     String  
+  teacher   String 
+  course    Course  @relation(fields: [courseId], references: [id])
+  courseId  Int 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("subjects")
 }
