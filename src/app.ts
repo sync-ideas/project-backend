@@ -10,7 +10,7 @@ const app = express();
 app.use(cors());
 
 // ---------- Routes ---------------
-app.use('/', authRouter);
+app.use('/login', authRouter);
 
 // ---------- Start server ---------
 app.listen(PORT, () => {

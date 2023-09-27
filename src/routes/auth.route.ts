@@ -1,14 +1,15 @@
-import express from 'express';
-import { AuthController } from '../controllers/auth.controller.js';
+import express from "express";
+import { authController } from "../controllers/auth.controller.js";
 
 const authRouter = express.Router();
 
-// Example route
-authRouter.get(
-  '/',
-  // middleware de auth, 
+//*Example route
+authRouter.post(
+  "/",
+  // middleware de auth,
   (req, res) => {
-    AuthController.get(req, res);
-  })
+    authController(req, res);
+  }
+);
 
-export default authRouter
+export default authRouter;
