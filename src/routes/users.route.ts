@@ -7,7 +7,7 @@ usersRouter.post(
   '/users/register',
   UsersController.register
 );
-usersRouter.post(
+usersRouter.put(
   '/users/confirm',
   UsersController.confirm
 );
@@ -15,6 +15,10 @@ usersRouter.get(
   '/users',
   // middleware de auth, 
   UsersController.getUsers
-):
+);
+usersRouter.delete(
+  '/users/delete',
+  UsersController.delete
+);
 
 export default usersRouter

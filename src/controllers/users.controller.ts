@@ -115,7 +115,7 @@ const UsersController = {
   },
   getUsers: async (req: Request, res: Response) => {
     try {
-      const users = await prisma.users.findMany({
+      const users = await prisma.user.findMany({
         where: {
           active: true
         }
@@ -138,7 +138,43 @@ const UsersController = {
         message: 'Internal server error'
       })
     }
-  }
+  },
+  delete: async (req: Request, res: Response) => {
+    const id = req.query.id as string;
+    if (!req.query.id) {
+      return res.status(400).json({
+        result: false,
+        message: 'Id is required',
+      });
+    }
+    try {
+      const user = await prisma.user.update({
+        where: {
+          id: id,
+        },
+        data: {
+          active: false,
+        },
+      });
+      if (user) {
+        return res.status(200).json({
+          result: true,
+          message: 'User deleted successfully',
+          user,
+        });
+      }
+    } catch (error) {
+      console.log(error)
+      let message = 'Internal server error'
+      if (error.code === 'P2025') {
+        message = 'User not found'
+      }
+      res.status(500).json({
+        result: false,
+        message: message
+      })
+    }
+  },
 };
 
 export default UsersController;
