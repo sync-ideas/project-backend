@@ -2,8 +2,6 @@ import { Request, Response } from 'express-serve-static-core';
 import { prisma } from '../config/prisma.client.js';
 import * as bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-
-import { AuthHelper } from '../helpers/auth.helper.js';
 import sendEmail from '../email/email.js';
 import { jwt_secret, bcrypt_rounds, fronend_url } from '../config/environment.js';
 
@@ -22,13 +20,13 @@ const AuthController = {
         });
       }
       const decodedEmail = jwt.verify(token, jwt_secret);
-      let response = await prisma.users.findUnique({
+      let response = await prisma.user.findUnique({
         where: {
           email: decodedEmail
         }
       })
       if (response !== null) {
-        response = await prisma.users.update({
+        response = await prisma.user.update({
           where: {
             email: decodedEmail
           },
@@ -65,7 +63,7 @@ const AuthController = {
           message: 'Email is required'
         });
       }
-      const user = await prisma.users.findUnique({
+      const user = await prisma.user.findUnique({
         where: {
           email: email
         }
@@ -117,7 +115,7 @@ const AuthController = {
       }
       const decodedToken = jwt.verify(token, jwt_secret);
       const encryptedPassword = await bcrypt.hash(password, password_salt);
-      const user = await prisma.users.findUnique({
+      const user = await prisma.user.findUnique({
         where: {
           email: decodedToken.email
         }
@@ -128,7 +126,7 @@ const AuthController = {
           message: 'User not found'
         });
       }
-      const response = await prisma.users.update({
+      const response = await prisma.user.update({
         where: {
           email: decodedToken.email
         },
