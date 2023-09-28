@@ -8,13 +8,13 @@ generator client {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   email     String   @unique
   name      String
   password  String
   role      String   @default("teacher")
-  active    Boolean  @default(true)
+  active    Boolean  @default(false)
 
   @@map("users")
 }
@@ -34,7 +34,7 @@ enum Role {
 }
 
 model Course {
-  id        Int      @id @default(autoincrement())
+  id        String   @unique
   nivel     String  
   number    Int
   letter    String
@@ -46,12 +46,12 @@ model Course {
 }
 
 model Subject {
-  id        Int      @id @default(autoincrement())
+  id        String   @unique
   name      String
   nivel     String  
   teacher   String 
   course    Course  @relation(fields: [courseId], references: [id])
-  courseId  Int 
+  courseId  String 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
