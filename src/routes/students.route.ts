@@ -15,6 +15,12 @@ studentsRouter.post(
   StudentsController.register
 );
 
+studentsRouter.put(
+  '/students/update',
+  // middleware de auth,
+  StudentsController.update
+)
+
 studentsRouter.delete(
   '/students/delete',
   // middleware de auth,

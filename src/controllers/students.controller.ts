@@ -94,6 +94,41 @@ const StudentsController = {
     }
   },
 
+  update: async (req: Request, res: Response) => {
+    try {
+      const { id, name, subjects } = req.body
+      if (!id || !name || !subjects) {
+        return res.status(400).json({
+          result: false,
+          message: 'All fields are required'
+        })
+      }
+      const student = await prisma.student.update({
+        where: {
+          id: id
+        },
+        data: {
+          name,
+          subjects
+        }
+      })
+      if (student) {
+        return res.status(200).json({
+          result: true,
+          message: 'Student updated',
+          student
+        })
+      }
+
+    } catch (error) {
+      console.log(error)
+      res.status(500).json({
+        result: false,
+        message: 'Internal server error'
+      })
+    }
+  },
+
   delete: async (req: Request, res: Response) => {
     try {
       if (!req.query.id) {
