@@ -11,4 +11,10 @@ usersRouter.post(
   '/users/confirm',
   UsersController.confirm
 );
+usersRouter.get(
+  '/users',
+  // middleware de auth, 
+  UsersController.getUsers
+):
+
 export default usersRouter
