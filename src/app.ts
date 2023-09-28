@@ -5,6 +5,7 @@ import { PORT } from './config/environment.js';
 
 import authRouter from './routes/auth.route.js';
 import studentsRouter from './routes/students.route.js';
+import usersRouter from './routes/users.route.js';
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use(cors());
 // ---------- Routes ---------------
 app.use('/api', authRouter);
 app.use('/api', studentsRouter);
+app.use('/api', usersRouter);
 
 // ---------- Start server ---------
 app.listen(PORT, () => {
