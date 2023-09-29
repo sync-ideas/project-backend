@@ -38,16 +38,16 @@ const AuthController = {
   },
 
   // Recibe un JWT en el query para comprobar el email (luego utilizara el jwt del header)
-  checkEmail: async (req: Request, res: Response) => {
+  /*checkEmail: async (req: Request, res: Response) => {
     try {
       const token = req.query.email
-      if (!token) {
+      if (!token || typeof token !== 'string') {
         return res.status(401).json({
           result: false,
           message: 'Token not found'
         });
       }
-      const decodedEmail = jwt.verify(token, jwt_secret);
+      const decodedEmail = jwt.verify(token, jwt_secret) as { email: string } | null;
       let response = await prisma.user.findUnique({
         where: {
           email: decodedEmail
@@ -79,7 +79,7 @@ const AuthController = {
         message: 'Internal server error'
       });
     }
-  },
+  },*/
 
   // Envia un email con un enlace para recuperar la contrasena (luego recuperara el email del jwt del header)
   forgotPassword: async (req: Request, res: Response) => {
@@ -141,7 +141,7 @@ const AuthController = {
           message: 'Token and password are required'
         });
       }
-      const decodedToken = jwt.verify(token, jwt_secret);
+      const decodedToken = jwt.verify(token, jwt_secret) as { email: string } | null;
       const encryptedPassword = await bcrypt.hash(password, password_salt);
       const user = await prisma.user.findUnique({
         where: {

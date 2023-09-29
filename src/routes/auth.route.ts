@@ -9,12 +9,13 @@ authRouter.post(
   AuthController.login
 );
 
-
+/*
 authRouter.post(
   '/auth/checkemail',
   // middleware de auth,
   AuthController.checkEmail
 )
+*/
 
 authRouter.post(
   '/auth/forgotpassword',

@@ -5,50 +5,77 @@ import sendEmail from '../email/email.js';
 import { jwt_secret, bcrypt_rounds, fronend_url } from '../config/environment.js';
 const password_salt = bcrypt.genSaltSync(bcrypt_rounds);
 const AuthController = {
-    // Recibe un JWT en el query para comprobar el email (luego utilizara el jwt del header)
-    checkEmail: async (req, res) => {
+    login: async (req, res) => {
+        const email = req.body;
+        const password = req.body;
         try {
-            const token = req.query.email;
-            if (!token) {
-                return res.status(401).json({
-                    result: false,
-                    message: 'Token not found'
-                });
-            }
-            const decodedEmail = jwt.verify(token, jwt_secret);
-            let response = await prisma.users.findUnique({
+            const usuario = await prisma.user.findUniqueOrThrow({
                 where: {
-                    email: decodedEmail
-                }
+                    email,
+                },
             });
-            if (response !== null) {
-                response = await prisma.users.update({
-                    where: {
-                        email: decodedEmail
-                    },
-                    data: {
-                        active: true
-                    }
+            if (!usuario) {
+                return res.status(404).json({
+                    msg: "Error: Usuario no encontrado",
                 });
-                if (response !== null)
-                    return res.status(200).json({
-                        result: true,
-                        response: response
-                    });
             }
-            return res.status(404).json({
-                result: false,
-                message: 'User not found'
-            });
+            const passwordMatch = await bcrypt.compare(password, usuario.password);
+            if (!passwordMatch) {
+                return res.status(401).json({
+                    msg: "Error: Contraseña incorrecta",
+                });
+            }
+            const token = jwt.sign({ id: usuario.id }, jwt_secret, { expiresIn: "36000s" });
+            return res.status(200).json({ token });
         }
         catch (error) {
-            console.log(error);
-            return res.status(500).json({
-                result: false,
-                message: 'Internal server error'
-            });
+            console.error(error);
+            return res.status(500).send("Error en el servidor");
         }
     },
+    // Recibe un JWT en el query para comprobar el email (luego utilizara el jwt del header)
+    /*checkEmail: async (req: Request, res: Response) => {
+      try {
+        const token = req.query.email
+        if (!token || typeof token !== 'string') {
+          return res.status(401).json({
+            result: false,
+            message: 'Token not found'
+          });
+        }
+        const decodedEmail = jwt.verify(token, jwt_secret) as { email: string } | null;
+        let response = await prisma.user.findUnique({
+          where: {
+            email: decodedEmail
+          }
+        })
+        if (response !== null) {
+          response = await prisma.user.update({
+            where: {
+              email: decodedEmail
+            },
+            data: {
+              active: true
+            }
+          })
+          if (response !== null)
+            return res.status(200).json({
+              result: true,
+              response: response
+            });
+        }
+        return res.status(404).json({
+          result: false,
+          message: 'User not found'
+        });
+      } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+          result: false,
+          message: 'Internal server error'
+        });
+      }
+    },*/
     // Envia un email con un enlace para recuperar la contrasena (luego recuperara el email del jwt del header)
     forgotPassword: async (req, res) => {
         try {
@@ -59,7 +86,7 @@ const AuthController = {
                     message: 'Email is required'
                 });
             }
-            const user = await prisma.users.findUnique({
+            const user = await prisma.user.findUnique({
                 where: {
                     email: email
                 }
@@ -111,7 +138,7 @@ const AuthController = {
             }
             const decodedToken = jwt.verify(token, jwt_secret);
             const encryptedPassword = await bcrypt.hash(password, password_salt);
-            const user = await prisma.users.findUnique({
+            const user = await prisma.user.findUnique({
                 where: {
                     email: decodedToken.email
                 }
@@ -122,7 +149,7 @@ const AuthController = {
                     message: 'User not found'
                 });
             }
-            const response = await prisma.users.update({
+            const response = await prisma.user.update({
                 where: {
                     email: decodedToken.email
                 },
