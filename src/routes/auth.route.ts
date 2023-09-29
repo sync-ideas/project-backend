@@ -1,15 +1,42 @@
-import express from "express";
-import { authController } from "../controllers/auth.controller.js";
+import express from 'express';
+import AuthController from '../controllers/auth.controller.js';
 
 const authRouter = express.Router();
 
-//*Example route
 authRouter.post(
-  "/",
+  "/auth/login",
   // middleware de auth,
   (req, res) => {
-    authController(req, res);
+    AuthController.loguin(req, res);
   }
 );
+
+
+authRouter.post(
+  '/auth/checkemail',
+  // middleware de auth,
+  (req, res) => {
+    AuthController.checkEmail(req, res);
+  }
+)
+
+authRouter.post(
+  '/auth/forgotpassword',
+  // middleware de auth,
+  (req, res) => {
+    AuthController.forgotPassword(req, res);
+  }
+)
+
+authRouter.post(
+  '/auth/resetpassword',
+  // middleware de auth,
+  (req, res) => {
+    AuthController.resetPassword(req, res);
+  }
+)
+
+
+
 
 export default authRouter;
