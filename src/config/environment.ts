@@ -13,3 +13,4 @@ export const mail_user = process.env.MAIL_USER
 export const mail_uri = process.env.MAIL_URI
 
 export const fronend_url = process.env.FRONTEND_URL
+export const backend_url = process.env.BACKEND_URL

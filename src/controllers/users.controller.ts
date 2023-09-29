@@ -6,17 +6,19 @@ import sendEmail from '../email/email.js';
 import {
   jwt_secret,
   bcrypt_rounds,
-  fronend_url,
+  backend_url,
 } from '../config/environment.js';
 
 const passwordSalt = bcrypt.genSaltSync(bcrypt_rounds);
 
 const UsersController = {
   register: async (req: Request, res: Response) => {
+    console.log(backend_url)
     try {
+
       const { email, name, password } = req.body;
       if (!email || !name || !password) {
-        return res.status(400).json({ message: 'All fields are required 1' });
+        return res.status(400).json({ message: 'All fields are required!' });
       }
       let user = await prisma.user.findUnique({
         where: {
@@ -47,7 +49,7 @@ const UsersController = {
           html: `<p>Hola ${name}, Confirma tu cuenta en Asistencias</p>
               <p>
                   Tu cuenta ya esta casi lista, solo debes confirmarla
-                  en el siguiente enlace: <a href="${fronend_url}/api/users/confirm?token=${token}">Confirmar cuenta</a>
+                  en el siguiente enlace: <a href="${backend_url}/api/users/confirm?token=${token}">Confirmar cuenta</a>
               </p>
               <p>Si no es tu cuenta puedes ignorar el mensaje.</p>`,
         });

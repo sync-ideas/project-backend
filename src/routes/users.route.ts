@@ -7,7 +7,7 @@ usersRouter.post(
   '/users/register',
   UsersController.register
 );
-usersRouter.put(
+usersRouter.get(
   '/users/confirm',
   UsersController.confirm
 );

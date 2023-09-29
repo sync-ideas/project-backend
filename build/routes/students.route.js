@@ -7,6 +7,9 @@ StudentsController.getStudents);
 studentsRouter.post('/students/register', 
 // middleware de auth,
 StudentsController.register);
+studentsRouter.put('/students/update', 
+// middleware de auth,
+StudentsController.update);
 studentsRouter.delete('/students/delete', 
 // middleware de auth,
 StudentsController.delete);
