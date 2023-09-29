@@ -176,6 +176,40 @@ const UsersController = {
       })
     }
   },
+
+  update: async (req: Request, res: Response) => {
+    try {
+      const { id, name } = req.body
+      if (!id || !name ) {
+        return res.status(400).json({
+          result: false,
+          message: 'All fields are required'
+        })
+      }
+      const user = await prisma.user.update({
+        where: {
+          id: id
+        },
+        data: {
+          name,
+        }
+      })
+      if (user) {
+        return res.status(200).json({
+          result: true,
+          message: 'User updated',
+          user
+        })
+      }
+
+    } catch (error) {
+      console.log(error)
+      res.status(500).json({
+        result: false,
+        message: 'Internal server error'
+      })
+    }
+  },
 };
 
 export default UsersController;

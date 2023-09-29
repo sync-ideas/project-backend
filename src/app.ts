@@ -22,4 +22,4 @@ app.use('/api', usersRouter);
 // ---------- Start server ---------
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-})
+});

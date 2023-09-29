@@ -20,5 +20,8 @@ usersRouter.delete(
   '/users/delete',
   UsersController.delete
 );
-
+usersRouter.put(
+  '/users/update',
+  UsersController.update
+);
 export default usersRouter
