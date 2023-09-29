@@ -6,34 +6,26 @@ const authRouter = express.Router();
 authRouter.post(
   "/auth/login",
   // middleware de auth,
-  (req, res) => {
-    AuthController.loguin(req, res);
-  }
+  AuthController.login
 );
 
 
 authRouter.post(
   '/auth/checkemail',
   // middleware de auth,
-  (req, res) => {
-    AuthController.checkEmail(req, res);
-  }
+  AuthController.checkEmail
 )
 
 authRouter.post(
   '/auth/forgotpassword',
   // middleware de auth,
-  (req, res) => {
-    AuthController.forgotPassword(req, res);
-  }
+  AuthController.forgotPassword
 )
 
 authRouter.post(
   '/auth/resetpassword',
   // middleware de auth,
-  (req, res) => {
-    AuthController.resetPassword(req, res);
-  }
+  AuthController.resetPassword
 )
 
 

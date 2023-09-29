@@ -3,8 +3,6 @@ dotenv.config()
 
 export const PORT = process.env.PORT
 
-export const SECRETORPRIVATEKEY = process.env.SECRETORPRIVATEKEY
-
 export const jwt_secret = process.env.JWT_SECRET
 
 export const bcrypt_rounds = Number(process.env.BCRYPT_ROUNDS)
