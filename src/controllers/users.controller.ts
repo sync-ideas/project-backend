@@ -72,14 +72,14 @@ const UsersController = {
     }
   },
   confirm: async (req: Request, res: Response) => {
-    const { token } = req.query;
-    if (!token) {
+    const { token } = req.query
+    if (!token || typeof token !== 'string') {
       return res.status(400).json({
         result: false,
         message: 'Token is required',
       });
     }
-    const decodedToken = jwt.verify(token, jwt_secret);
+    const decodedToken = jwt.verify(token, jwt_secret) as { email: string } | null;
     const userConfirm = await prisma.user.findUnique({
       where: {
         email: decodedToken.email,
@@ -113,6 +113,7 @@ const UsersController = {
       });
     }
   },
+
   getUsers: async (req: Request, res: Response) => {
     try {
       const users = await prisma.user.findMany({
