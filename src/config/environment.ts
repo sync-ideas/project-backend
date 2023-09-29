@@ -2,6 +2,9 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 export const PORT = process.env.PORT
+
+export const SECRETORPRIVATEKEY = process.env.SECRETORPRIVATEKEY
+
 export const jwt_secret = process.env.JWT_SECRET
 
 export const bcrypt_rounds = Number(process.env.BCRYPT_ROUNDS)
@@ -13,3 +16,4 @@ export const mail_user = process.env.MAIL_USER
 export const mail_uri = process.env.MAIL_URI
 
 export const fronend_url = process.env.FRONTEND_URL
+

@@ -4,6 +4,15 @@ import AuthController from '../controllers/auth.controller.js';
 const authRouter = express.Router();
 
 authRouter.post(
+  "/auth/login",
+  // middleware de auth,
+  (req, res) => {
+    AuthController.loguin(req, res);
+  }
+);
+
+
+authRouter.post(
   '/auth/checkemail',
   // middleware de auth,
   (req, res) => {
@@ -29,4 +38,5 @@ authRouter.post(
 
 
 
-export default authRouter
+
+export default authRouter;
