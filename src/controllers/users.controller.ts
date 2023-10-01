@@ -12,6 +12,7 @@ import {
 const passwordSalt = bcrypt.genSaltSync(bcrypt_rounds);
 
 const UsersController = {
+
   register: async (req: Request, res: Response) => {
     try {
       const { email, name, password } = req.body;
