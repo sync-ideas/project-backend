@@ -1,6 +1,8 @@
 import express from 'express';
 import UsersController from '../controllers/users.controller.js';
 
+import passport from '../middlewares/auth.js';
+
 const usersRouter = express.Router();
 
 usersRouter.post(
@@ -30,13 +32,13 @@ usersRouter.put(
 
 usersRouter.get(
   '/users',
-  // middleware de auth, 
+  // passport.authenticate('adminJWT'),
   UsersController.getUsers
 );
 
 usersRouter.delete(
   '/users/delete',
-  // middleware de auth,
+  // passport.authenticate('adminJWT'),
   UsersController.delete
 );
 
