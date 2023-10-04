@@ -15,6 +15,11 @@ usersRouter.post(
   UsersController.register
 );
 
+usersRouter.put(
+  '/users/confirm',
+  UsersController.confirm
+);
+
 usersRouter.post(
   '/users/forgotpassword',
   UsersController.forgotPassword
@@ -25,20 +30,15 @@ usersRouter.post(
   UsersController.resetPassword
 )
 
-usersRouter.put(
-  '/users/confirm',
-  UsersController.confirm
-);
-
 usersRouter.get(
   '/users',
-  // passport.authenticate('adminJWT'),
+  passport.authenticate('adminJWT', { session: false }),
   UsersController.getUsers
 );
 
 usersRouter.delete(
   '/users/delete',
-  // passport.authenticate('adminJWT'),
+  passport.authenticate('adminJWT', { session: false }),
   UsersController.delete
 );
 
