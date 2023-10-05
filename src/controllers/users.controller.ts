@@ -2,7 +2,7 @@ import { Request, Response } from 'express-serve-static-core';
 import { prisma } from '../config/prisma.client.js';
 import * as bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import sendEmail from '../email/email.test.js';
+import sendEmail from '../email/email.js';
 import {
   jwt_secret,
   bcrypt_rounds,
@@ -84,9 +84,10 @@ const UsersController = {
         },
       });
       const token = jwt.sign({ email: email }, jwt_secret, { expiresIn: '1h' });
+
       if (user) {
         // Por el momento el enlace es al backend, luego cuando se integre el frontend se enviara alli
-        sendEmail({
+        const emailResponse = await sendEmail({
           from: '"Asistencias - Administrador de Asistencias"',
           to: email,
           subject: 'Asistencias - Confirma tu cuenta',
@@ -94,17 +95,24 @@ const UsersController = {
           html: `<p>Hola ${name}, Confirma tu cuenta en Asistencias</p>
               <p>
                   Tu cuenta ya esta casi lista, solo debes confirmarla
-                  en el siguiente enlace: <a href="${backend_url}/api/users/confirm?token=${token}">Confirmar cuenta</a>
+                  en el siguiente enlace: <a href="${backend_url}/api/users/confirm/${token}">Confirmar cuenta</a>
               </p>
               <p>Si no es tu cuenta puedes ignorar el mensaje.</p>`,
         });
 
-        return res.status(201).json({
-          result: true,
-          message:
-            'User created successfully, Please check your email to activate your account',
-          user,
-        });
+        if (emailResponse.result) {
+          return res.status(201).json({
+            result: true,
+            message:
+              'User created successfully, Please check your email to activate your account',
+            user,
+          });
+        }
+
+        return res.status(400).json({
+          result: false,
+          message: 'Confirmation email not sent',
+        })
       }
       return res.status(400).json({
         result: false,
@@ -119,8 +127,9 @@ const UsersController = {
     }
   },
 
+  // Confirmacion de cuenta: recibe token que fue enviado por email
   confirm: async (req: Request, res: Response) => {
-    const { token } = req.query
+    const { token } = req.params
     if (!token || typeof token !== 'string') {
       return res.status(400).json({
         result: false,
@@ -162,6 +171,7 @@ const UsersController = {
     }
   },
 
+  // Recuperacion de contraseña: envia email para recuperar la contraseña
   forgotPassword: async (req: Request, res: Response) => {
     try {
       const email = req.body.email
@@ -183,24 +193,22 @@ const UsersController = {
         });
       }
       const token = jwt.sign({ email: email }, jwt_secret, { expiresIn: '1h' });
-      const response = await sendEmail({
+      const emailResponse = await sendEmail({
         from: 'Asistencias',
         to: email,
         subject: 'Recuperacion de contraseña',
         text: `Por favor, haz click en el siguiente link para recuperar tu contraseña: ${fronend_url}/api/auth/reset?token=${token}`,
         html: `<p>Por favor, haz click en el siguiente link para recuperar tu contraseña: <a href="${fronend_url}/api/auth/reset?token=${token}">${fronend_url}/api/auth/reset?token=${token}</a></p>`
       })
-      // Falta logica de error al enviar el email
-      if (response === null) {
-        return res.status(500).json({
+      if (!emailResponse.result) {
+        return res.status(400).json({
           result: false,
-          message: 'Internal server error'
-        });
+          message: 'Email not sent',
+        })
       }
       return res.status(200).json({
         result: true,
         message: 'Email sent',
-        response
       })
     } catch (error) {
       console.log(error);
@@ -211,7 +219,7 @@ const UsersController = {
     }
   },
 
-  // Recupera la contrasena recibe token y nueva contrasena (cuando reciba el token por headers no va a se necesario pasarlo por body)
+  // Recupera la contraseña: recibe token y nueva contraseña. El token lo obtiene el frontend del email de recuperacion
   resetPassword: async (req: Request, res: Response) => {
     try {
       const { token, password } = req.body;
