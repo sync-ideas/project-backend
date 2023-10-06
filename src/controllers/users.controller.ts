@@ -139,7 +139,7 @@ const UsersController = {
     const decodedToken = jwt.verify(token, jwt_secret) as { email: string } | null;
     const userConfirm = await prisma.user.findUnique({
       where: {
-        email: decodedToken.email,
+        email: decodedToken?.email || null,
       },
     });
     if (!userConfirm) {
