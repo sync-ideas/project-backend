@@ -11,5 +11,6 @@
 - npx prisma migrate dev --name init
 
 
-
+## API DOC
+https://documenter.getpostman.com/view/24685479/2s9YC5zYqr
 

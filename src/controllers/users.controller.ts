@@ -15,30 +15,43 @@ const passwordSalt = bcrypt.genSaltSync(bcrypt_rounds);
 const UsersController = {
 
   login: async (req: Request, res: Response) => {
-    const email = req.body;
-    const password = req.body;
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({
+        result: false,
+        message: 'Email and password are required'
+      });
+    }
     try {
-      const usuario = await prisma.user.findUniqueOrThrow({
+      const user = await prisma.user.findUniqueOrThrow({
         where: {
           email,
         },
       });
-      if (!usuario) {
+      if (!user) {
         return res.status(404).json({
-          msg: "Error: Usuario no encontrado",
+          result: false,
+          message: 'User not found'
         });
       }
-      const passwordMatch = await bcrypt.compare(password, usuario.password);
+      const passwordMatch = await bcrypt.compare(password, user.password);
       if (!passwordMatch) {
         return res.status(401).json({
-          msg: "Error: Contraseña incorrecta",
-        })
+          result: false,
+          message: 'Incorrect password'
+        });
       }
-      const token = jwt.sign({ id: usuario.id }, jwt_secret, { expiresIn: "36000s" });
-      return res.status(200).json({ token });
+      const token = jwt.sign({ id: user.id }, jwt_secret, { expiresIn: "36000s" });
+      return res.status(200).json({
+        token,
+        result: true
+      });
     } catch (error) {
       console.error(error);
-      return res.status(500).send("Error en el servidor");
+      return res.status(500).json({
+        result: false,
+        message: 'Internal server error'
+      })
     }
   },
 
@@ -46,7 +59,10 @@ const UsersController = {
     try {
       const { email, name, password } = req.body;
       if (!email || !name || !password) {
-        return res.status(400).json({ message: 'All fields are required 1' });
+        return res.status(400).json({
+          message: 'All fields are required 1',
+          result: false
+        });
       }
       let user = await prisma.user.findUnique({
         where: {
@@ -68,8 +84,10 @@ const UsersController = {
         },
       });
       const token = jwt.sign({ email: email }, jwt_secret, { expiresIn: '1h' });
+
       if (user) {
-        sendEmail({
+        // Por el momento el enlace es al backend, luego cuando se integre el frontend se enviara alli
+        const emailResponse = await sendEmail({
           from: '"Asistencias - Administrador de Asistencias"',
           to: email,
           subject: 'Asistencias - Confirma tu cuenta',
@@ -77,17 +95,24 @@ const UsersController = {
           html: `<p>Hola ${name}, Confirma tu cuenta en Asistencias</p>
               <p>
                   Tu cuenta ya esta casi lista, solo debes confirmarla
-                  en el siguiente enlace: <a href="${fronend_url}/api/users/confirm?token=${token}">Confirmar cuenta</a>
+                  en el siguiente enlace: <a href="${backend_url}/api/users/confirm/${token}">Confirmar cuenta</a>
               </p>
               <p>Si no es tu cuenta puedes ignorar el mensaje.</p>`,
         });
 
-        return res.status(201).json({
-          result: true,
-          message:
-            'User created successfully, Please check your email to activate your account',
-          user,
-        });
+        if (emailResponse.result) {
+          return res.status(201).json({
+            result: true,
+            message:
+              'User created successfully, Please check your email to activate your account',
+            user,
+          });
+        }
+
+        return res.status(400).json({
+          result: false,
+          message: 'Confirmation email not sent',
+        })
       }
       return res.status(400).json({
         result: false,
@@ -102,6 +127,51 @@ const UsersController = {
     }
   },
 
+  // Confirmacion de cuenta: recibe token que fue enviado por email
+  confirm: async (req: Request, res: Response) => {
+    const { token } = req.params
+    if (!token || typeof token !== 'string') {
+      return res.status(400).json({
+        result: false,
+        message: 'Token is required',
+      });
+    }
+    const decodedToken = jwt.verify(token, jwt_secret) as { email: string } | null;
+    const userConfirm = await prisma.user.findUnique({
+      where: {
+        email: decodedToken.email,
+      },
+    });
+    if (!userConfirm) {
+      return res.status(404).json({
+        result: false,
+        message: 'Invalid token',
+      });
+    }
+    try {
+      const user = await prisma.user.update({
+        where: {
+          email: decodedToken.email,
+        },
+        data: {
+          active: true,
+        },
+      });
+      return res.status(200).json({
+        result: true,
+        message: 'User account Activated successfully',
+        user,
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({
+        result: false,
+        message: 'Internal server error',
+      });
+    }
+  },
+
+  // Recuperacion de contraseña: envia email para recuperar la contraseña
   forgotPassword: async (req: Request, res: Response) => {
     try {
       const email = req.body.email
@@ -123,24 +193,22 @@ const UsersController = {
         });
       }
       const token = jwt.sign({ email: email }, jwt_secret, { expiresIn: '1h' });
-      const response = await sendEmail({
+      const emailResponse = await sendEmail({
         from: 'Asistencias',
         to: email,
         subject: 'Recuperacion de contraseña',
         text: `Por favor, haz click en el siguiente link para recuperar tu contraseña: ${fronend_url}/api/auth/reset?token=${token}`,
         html: `<p>Por favor, haz click en el siguiente link para recuperar tu contraseña: <a href="${fronend_url}/api/auth/reset?token=${token}">${fronend_url}/api/auth/reset?token=${token}</a></p>`
       })
-      // Falta logica de error al enviar el email
-      if (response === null) {
-        return res.status(500).json({
+      if (!emailResponse.result) {
+        return res.status(400).json({
           result: false,
-          message: 'Internal server error'
-        });
+          message: 'Email not sent',
+        })
       }
       return res.status(200).json({
         result: true,
         message: 'Email sent',
-        response
       })
     } catch (error) {
       console.log(error);
@@ -151,7 +219,7 @@ const UsersController = {
     }
   },
 
-  // Recupera la contrasena recibe token y nueva contrasena (cuando reciba el token por headers no va a se necesario pasarlo por body)
+  // Recupera la contraseña: recibe token y nueva contraseña. El token lo obtiene el frontend del email de recuperacion
   resetPassword: async (req: Request, res: Response) => {
     try {
       const { token, password } = req.body;
@@ -200,49 +268,6 @@ const UsersController = {
         result: false,
         message: 'Internal server error'
 
-      });
-    }
-  },
-
-  confirm: async (req: Request, res: Response) => {
-    const { token } = req.query
-    if (!token || typeof token !== 'string') {
-      return res.status(400).json({
-        result: false,
-        message: 'Token is required',
-      });
-    }
-    const decodedToken = jwt.verify(token, jwt_secret) as { email: string } | null;
-    const userConfirm = await prisma.user.findUnique({
-      where: {
-        email: decodedToken.email,
-      },
-    });
-    if (!userConfirm) {
-      return res.status(404).json({
-        result: false,
-        message: 'Invalid token',
-      });
-    }
-    try {
-      const user = await prisma.user.update({
-        where: {
-          email: decodedToken.email,
-        },
-        data: {
-          active: true,
-        },
-      });
-      return res.status(200).json({
-        result: true,
-        message: 'User account Activated successfully',
-        user,
-      });
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({
-        result: false,
-        message: 'Internal server error',
       });
     }
   },

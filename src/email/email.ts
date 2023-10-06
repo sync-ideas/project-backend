@@ -1,44 +1,26 @@
-import nodemailer from 'nodemailer';
-import { google } from 'googleapis';
-
+import sgMail from '@sendgrid/mail'
+import { sendgrid_api_key } from "../config/environment.js"
 import { IEmail } from '../types/emailTypes.js';
-import { mail_user, mail_clientId, mail_clientSecret, mail_refreshToken, mail_uri } from '../config/environment.js';
 
-const oAuth2Client = new google.auth.OAuth2(mail_clientId, mail_clientSecret, mail_uri);
-oAuth2Client.setCredentials({ refresh_token: mail_refreshToken });
+sgMail.setApiKey(sendgrid_api_key)
 
 export default async function sendEmail(email: IEmail) {
   try {
-    const accessToken = await oAuth2Client.getAccessToken();
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        type: 'OAuth2',
-        user: mail_user,
-        clientId: mail_clientId,
-        clientSecret: mail_clientSecret,
-        refreshToken: mail_refreshToken,
-        accessToken: accessToken
-      },
-      tls: {
-        rejectUnauthorized: false
-      }
-    });
-    const mailOptions = {
-      from: email.from,
+    const msg = {
       to: email.to,
+      from: 'sync.ideas.group@gmail.com',
       subject: email.subject,
       text: email.text,
-      html: email.html
-    }
-    const result = await transporter.sendMail(mailOptions);
-    console.log(result);
-    return result
+      html: email.html,
+    };
+    await sgMail.send(msg);
+    return { result: true };
   } catch (error) {
-    console.log(error)
+    console.error(error);
+    return { result: false, error };
   }
-
 }
+
 
 
 
