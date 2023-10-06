@@ -6,7 +6,7 @@ const StudentsController = {
   getStudents: async (req: Request, res: Response) => {
     try {
       if (req.query.id) {
-        const id = req.query.id as string
+        const id = parseInt(req.query.id as string)
         const student = await prisma.student.findUnique({
           where: {
             id: id,
@@ -52,13 +52,13 @@ const StudentsController = {
 
   register: async (req: Request, res: Response) => {
     try {
-      const { id, name, subjects } = req.body
-      if (!id || !name || !subjects) {
-        return res.status(400).json({ message: 'All fields are required' })
+      const { manual_id, fullname, contact_phone } = req.body
+      if (!fullname) {
+        return res.status(400).json({ message: 'Fullname is required' })
       }
-      let student = await prisma.student.findUnique({
+      let student = await prisma.student.findFirst({
         where: {
-          id: id
+          manual_id
         }
       })
       if (student) {
@@ -69,9 +69,9 @@ const StudentsController = {
       }
       student = await prisma.student.create({
         data: {
-          id,
-          name,
-          subjects
+          manual_id,
+          fullname,
+          contact_phone
         }
       })
       if (student) {
@@ -96,8 +96,8 @@ const StudentsController = {
 
   update: async (req: Request, res: Response) => {
     try {
-      const { id, name, subjects } = req.body
-      if (!id || !name || !subjects) {
+      const { id, manual_id, fullname, contact_phone, subjects } = req.body
+      if (!id || manual_id || !fullname || !contact_phone || !subjects) {
         return res.status(400).json({
           result: false,
           message: 'All fields are required'
@@ -108,7 +108,9 @@ const StudentsController = {
           id: id
         },
         data: {
-          name,
+          manual_id,
+          fullname,
+          contact_phone,
           subjects
         }
       })
@@ -137,7 +139,7 @@ const StudentsController = {
           message: 'Id is required'
         })
       }
-      const id = req.query.id as string
+      const id = parseInt(req.query.id as string)
       const student = await prisma.student.update({
         where: {
           id: id

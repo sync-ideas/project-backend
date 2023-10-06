@@ -7,53 +7,92 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// Modelo de usuario
 model User {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  email     String   @unique
-  name      String
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now())
+  email     String    @unique
+  fullname  String
   password  String
-  role      String   @default("teacher")
-  active    Boolean  @default(false)
+  role      Role      @default(TEACHER)
+  active    Boolean   @default(false)
+  subjects  Subject[] // Relación uno a muchos con Subject
 
   @@map("users")
 }
 
-model Student {
-  id       String   @unique
-  name     String
-  subjects String[]
-  active   Boolean  @default(true)
-
-  @@map("students")
-}
-
+// Enumeración para roles
 enum Role {
+  ADMIN
   USER
   TEACHER
 }
 
+// Modelo de estudiante
+model Student {
+  id             Int             @id @default(autoincrement())
+  manual_id      String
+  fullname       String
+  contact_phone  String
+  active         Boolean         @default(true)
+  subjects       Subject[] // Relación muchos a muchos con Subject
+  attendances    Attendance[] // Relación uno a muchos con Attendance
+  nonattendances Nonattendance[] // Relación uno a muchos con Attendance
+
+  @@map("students")
+}
+
+// Modelo de curso
 model Course {
-  id        String   @unique
-  nivel     String  
+  id        String    @id @default(cuid())
+  level     String
   number    Int
   letter    String
-  subjects  Subject[]  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  subjects  Subject[] // Relación uno a muchos con Subject
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   @@map("courses")
 }
 
+// Modelo de asignatura
 model Subject {
-  id        String   @unique
-  name      String
-  nivel     String  
-  teacher   String 
-  course    Course  @relation(fields: [courseId], references: [id])
-  courseId  String 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String          @id @default(cuid())
+  name           String
+  level          String
+  teacher        User            @relation(fields: [teacherId], references: [id])
+  teacherId      String
+  course         Course          @relation(fields: [courseId], references: [id])
+  courseId       String
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  students       Student[] // Relación muchos a muchos con Student
+  attendances    Attendance[] // Relación uno a muchos con Attendance
+  nonattendances Nonattendance[] // Relación uno a muchos con Attendance
 
   @@map("subjects")
+}
+
+// Modelo de asistencias
+model Attendance {
+  id        String   @id @default(cuid())
+  date      DateTime
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  subjectId String
+  student   Student  @relation(fields: [studentId], references: [id])
+  studentId Int
+
+  @@map("attendances")
+}
+
+// Modelo de inasistencias
+model Nonattendance {
+  id        String   @id @default(cuid())
+  date      DateTime
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  subjectId String
+  student   Student  @relation(fields: [studentId], references: [id])
+  studentId Int
+
+  @@map("nonattendances")
 }

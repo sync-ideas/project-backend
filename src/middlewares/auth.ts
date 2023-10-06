@@ -48,7 +48,7 @@ passport.use(
           },
         });
 
-        if (!user || user.role !== 'admin') {
+        if (!user || user.role !== 'ADMIN') {
           return done(null, false);
         }
 
