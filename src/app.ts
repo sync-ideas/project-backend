@@ -6,7 +6,7 @@ import { PORT } from './config/environment.js';
 import authRouter from './routes/auth.route.js';
 import studentsRouter from './routes/students.route.js';
 import usersRouter from './routes/users.route.js';
-import coursesRouter from "./routes/courses.route.js";
+import coursesRouter from './routes/courses.route.js';
 
 const app = express();
 
@@ -18,7 +18,7 @@ app.use(cors());
 app.use('/api', authRouter);
 app.use('/api', studentsRouter);
 app.use('/api', usersRouter);
-app.use('/api',coursesRouter)
+app.use('/api', coursesRouter)
 
 
 // ---------- Start server ---------
