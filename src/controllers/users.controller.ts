@@ -60,7 +60,7 @@ const UsersController = {
       const { email, fullname, password } = req.body;
       if (!email || !fullname || !password) {
         return res.status(400).json({
-          message: 'All fields are required 1',
+          message: 'All fields are required.',
           result: false
         });
       }
@@ -92,7 +92,7 @@ const UsersController = {
           to: email,
           subject: 'Asistencias - Confirma tu cuenta',
           text: 'Confirma tu cuenta en Asistencias',
-          html: `<p>Hola ${name}, Confirma tu cuenta en Asistencias</p>
+          html: `<p>Hola ${fullname}, Confirma tu cuenta en Asistencias</p>
               <p>
                   Tu cuenta ya esta casi lista, solo debes confirmarla
                   en el siguiente enlace: <a href="${backend_url}/api/users/confirm/${token}">Confirmar cuenta</a>
@@ -277,6 +277,13 @@ const UsersController = {
       const users = await prisma.user.findMany({
         where: {
           active: true
+        },
+        select: {
+          id: true,
+          createdAt: true,
+          fullname: true,
+          email: true,
+          role: true
         }
       })
       if (users) {

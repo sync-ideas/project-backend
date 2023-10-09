@@ -16,7 +16,7 @@ passport.use(
       try {
         const user = await prisma.user.findUnique({
           where: {
-            email: payload.email,
+            id: payload.id,
           },
         });
 
@@ -43,7 +43,7 @@ passport.use(
       try {
         const user = await prisma.user.findUnique({
           where: {
-            email: payload.email,
+            id: payload.id,
           },
         });
 
