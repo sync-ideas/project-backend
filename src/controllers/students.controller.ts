@@ -6,7 +6,7 @@ const StudentsController = {
   getStudents: async (req: Request, res: Response) => {
     try {
       if (req.query.id) {
-        const id = req.query.id as string
+        const id = parseInt(req.query.id as string)
         const student = await prisma.student.findUnique({
           where: {
             id: id,
@@ -52,26 +52,28 @@ const StudentsController = {
 
   register: async (req: Request, res: Response) => {
     try {
-      const { id, name, subjects } = req.body
-      if (!id || !name || !subjects) {
-        return res.status(400).json({ message: 'All fields are required' })
+      const { fullname, manual_id, contact_phone } = req.body
+      if (!fullname) {
+        return res.status(400).json({ message: 'A fullname is required' })
       }
-      let student = await prisma.student.findUnique({
-        where: {
-          id: id
-        }
-      })
-      if (student) {
-        return res.status(400).json({
-          result: false,
-          message: 'Id already exists'
+      if (manual_id) {
+        const student = await prisma.student.findFirst({
+          where: {
+            manual_id
+          }
         })
+        if (student) {
+          return res.status(400).json({
+            result: false,
+            message: 'Manual id already exists'
+          })
+        }
       }
-      student = await prisma.student.create({
+      const student = await prisma.student.create({
         data: {
-          id,
-          name,
-          subjects
+          fullname,
+          manual_id: manual_id ? manual_id : null,
+          contact_phone: contact_phone ? contact_phone : null
         }
       })
       if (student) {
@@ -96,8 +98,8 @@ const StudentsController = {
 
   update: async (req: Request, res: Response) => {
     try {
-      const { id, name, subjects } = req.body
-      if (!id || !name || !subjects) {
+      const { id, manual_id, fullname, contact_phone, subjects } = req.body
+      if (!id || !manual_id || !fullname || !contact_phone || !subjects) {
         return res.status(400).json({
           result: false,
           message: 'All fields are required'
@@ -108,7 +110,9 @@ const StudentsController = {
           id: id
         },
         data: {
-          name,
+          manual_id,
+          fullname,
+          contact_phone,
           subjects
         }
       })
@@ -137,7 +141,7 @@ const StudentsController = {
           message: 'Id is required'
         })
       }
-      const id = req.query.id as string
+      const id = parseInt(req.query.id as string)
       const student = await prisma.student.update({
         where: {
           id: id

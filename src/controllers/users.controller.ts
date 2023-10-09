@@ -57,8 +57,8 @@ const UsersController = {
 
   register: async (req: Request, res: Response) => {
     try {
-      const { email, name, password } = req.body;
-      if (!email || !name || !password) {
+      const { email, fullname, password } = req.body;
+      if (!email || !fullname || !password) {
         return res.status(400).json({
           message: 'All fields are required 1',
           result: false
@@ -79,7 +79,7 @@ const UsersController = {
       user = await prisma.user.create({
         data: {
           email,
-          name,
+          fullname,
           password: newPassword,
         },
       });

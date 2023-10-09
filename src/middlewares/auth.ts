@@ -1,5 +1,4 @@
 import passport from 'passport';
-import { Strategy as LocalStrategy } from 'passport-local';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import jwt from 'jsonwebtoken';
 
@@ -48,7 +47,7 @@ passport.use(
           },
         });
 
-        if (!user || user.role !== 'admin') {
+        if (!user || user.role !== 'ADMIN') {
           return done(null, false);
         }
 
