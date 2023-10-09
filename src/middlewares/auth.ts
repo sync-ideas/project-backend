@@ -41,6 +41,7 @@ passport.use(
     },
     async (payload, done) => {
       try {
+
         const user = await prisma.user.findUnique({
           where: {
             id: payload.id,
@@ -59,8 +60,8 @@ passport.use(
   )
 );
 
-export const generateToken = (email: string) => {
-  return jwt.sign({ email }, jwt_secret, { expiresIn: '1h' });
+export const generateToken = (id: string) => {
+  return jwt.sign({ id }, jwt_secret, { expiresIn: '1h' });
 }
 
 
