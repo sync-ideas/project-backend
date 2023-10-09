@@ -1,16 +1,16 @@
 import express from 'express';
 import CoursesController from '../controllers/courses.controller.js';
 
-const cursesRouter = express.Router();
+const coursesRouter = express.Router();
 
-cursesRouter.post(
-    '/curses/register',
+coursesRouter.post(
+    '/ocurses/register',
     CoursesController.create
 );
 
-cursesRouter.delete(
-    '/curses/delete',
+coursesRouter.delete(
+    '/ocurses/delete',
     CoursesController.delete
 );
 
-export default cursesRouter;
+export default coursesRouter;
