@@ -10,7 +10,7 @@ passport.use('userJWT', new JwtStrategy({
     try {
         const user = await prisma.user.findUnique({
             where: {
-                email: payload.email,
+                id: payload.id,
             },
         });
         if (!user) {
@@ -29,10 +29,10 @@ passport.use('adminJWT', new JwtStrategy({
     try {
         const user = await prisma.user.findUnique({
             where: {
-                email: payload.email,
+                id: payload.id,
             },
         });
-        if (!user || user.role !== 'admin') {
+        if (!user || user.role !== 'ADMIN') {
             return done(null, false);
         }
         return done(null, user);

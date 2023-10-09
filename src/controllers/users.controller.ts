@@ -60,7 +60,7 @@ const UsersController = {
       const { email, fullname, password } = req.body;
       if (!email || !fullname || !password) {
         return res.status(400).json({
-          message: 'All fields are required 1',
+          message: 'All fields are required.',
           result: false
         });
       }
@@ -277,6 +277,13 @@ const UsersController = {
       const users = await prisma.user.findMany({
         where: {
           active: true
+        },
+        select: {
+          id: true,
+          createdAt: true,
+          fullname: true,
+          email: true,
+          role: true
         }
       })
       if (users) {

@@ -1,5 +1,4 @@
 import passport from 'passport';
-import { Strategy as LocalStrategy } from 'passport-local';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import jwt from 'jsonwebtoken';
 
@@ -17,7 +16,7 @@ passport.use(
       try {
         const user = await prisma.user.findUnique({
           where: {
-            email: payload.email,
+            id: payload.id,
           },
         });
 

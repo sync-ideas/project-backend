@@ -57,20 +57,44 @@ model Course {
 
 // Modelo de asignatura
 model Subject {
-  id             String          @id @default(cuid())
+  id             String            @id @default(cuid())
   name           String
   level          String
-  teacher        User            @relation(fields: [teacherId], references: [id])
+  teacher        User              @relation(fields: [teacherId], references: [id])
   teacherId      String
-  course         Course          @relation(fields: [courseId], references: [id])
+  course         Course            @relation(fields: [courseId], references: [id])
   courseId       String
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  scheludea      SubjectSchelude[]
+  startSubjet    DateTime
+  endSubject     DateTime
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
   students       Student[] // Relación muchos a muchos con Student
   attendances    Attendance[] // Relación uno a muchos con Attendance
   nonattendances Nonattendance[] // Relación uno a muchos con Attendance
 
   @@map("subjects")
+}
+
+// Submodelo de horarios de asignatura
+model SubjectSchelude {
+  id        Int     @id @default(autoincrement())
+  day       Day
+  start     String
+  end       String
+  subject   Subject @relation(fields: [subjectId], references: [id])
+  subjectId String
+}
+
+// Enumeracion para dias
+enum Day {
+  MON
+  TUE
+  WED
+  THU
+  FRI
+  SAT
+  SUN
 }
 
 // Modelo de asistencias
