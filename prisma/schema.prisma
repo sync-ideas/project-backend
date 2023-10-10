@@ -64,7 +64,7 @@ model Subject {
   teacherId      String
   course         Course            @relation(fields: [courseId], references: [id])
   courseId       String
-  scheludea      SubjectSchelude[]
+  schelude       SubjectSchelude[]
   startSubjet    DateTime
   endSubject     DateTime
   createdAt      DateTime          @default(now())
