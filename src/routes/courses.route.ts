@@ -4,12 +4,17 @@ import CoursesController from '../controllers/courses.controller.js';
 const coursesRouter = express.Router();
 
 coursesRouter.post(
-    '/ocurses/register',
+    '/courses/register',
     CoursesController.create
 );
 
+coursesRouter.put(
+    '/courses/update',
+    CoursesController.update
+)
+
 coursesRouter.delete(
-    '/ocurses/delete',
+    '/courses/delete',
     CoursesController.delete
 );
 
