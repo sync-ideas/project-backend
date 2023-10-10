@@ -9,8 +9,13 @@ import {
   fronend_url,
   backend_url
 } from '../config/environment.js';
-
 const passwordSalt = bcrypt.genSaltSync(bcrypt_rounds);
+
+enum Roles {
+  ADMIN,
+  USER,
+  TEACHER,
+}
 
 const UsersController = {
 
@@ -305,7 +310,6 @@ const UsersController = {
       })
     }
   },
-
   delete: async (req: Request, res: Response) => {
     const id = req.query.id as string;
     if (!req.query.id) {
@@ -342,6 +346,54 @@ const UsersController = {
       })
     }
   },
+  assignRole: async(req: Request, res: Response)=>{
+    const id = req.query.id as string;
+    const { role } = req.body;
+    if (!id) {
+      return res.status(400).json({
+        result: false,
+        message: 'Id is required',
+      });
+    }
+    if (!role) {
+      return res.status(400).json({
+        result: false,
+        message: 'Role field is required',
+      });
+    }
+    if (!(role in Roles)) {
+      return res.status(400).json({
+        result: false,
+        message: `${role} is not an assignable role`,
+      });
+      }
+    try {
+      const user = await prisma.user.update({
+        where: {
+          id: id,
+        },
+        data: {
+          role: role,
+        },
+      });
+      if (user) {
+        return res.status(200).json({
+          result: true,
+          message: 'Role successfully assigned',
+          user,
+        });
+      }
+    } catch (error) {
+      let message = 'Internal server error'
+      if (error.code === 'P2025') {
+        message = 'User not found'
+      }
+      res.status(500).json({
+        result: false,
+        message: message
+      })
+    }
+  }
 
 };
 
