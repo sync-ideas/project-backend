@@ -42,4 +42,9 @@ usersRouter.delete(
   UsersController.delete
 );
 
+usersRouter.put(
+  '/users/assignrole',
+  UsersController.assignRole
+);
+
 export default usersRouter
