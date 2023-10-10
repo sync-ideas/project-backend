@@ -41,8 +41,8 @@ passport.use('adminJWT', new JwtStrategy({
         return done(error);
     }
 }));
-export const generateToken = (email) => {
-    return jwt.sign({ email }, jwt_secret, { expiresIn: '1h' });
+export const generateToken = (id) => {
+    return jwt.sign({ id }, jwt_secret, { expiresIn: '1h' });
 };
 export default passport;
 //# sourceMappingURL=auth.js.map
