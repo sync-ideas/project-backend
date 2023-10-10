@@ -5,7 +5,7 @@ const CoursesController = {
   create: async (req: Request, res: Response) => {
     try {
       const { level, number, letter } = req.body;
-      if (!level) {
+      if (!level || !number || !letter) {
         return res.status(400).json({ message: "Level is required" });
       }
       let course = await prisma.course.findFirst({
@@ -47,7 +47,7 @@ const CoursesController = {
       });
     }
   },
-  update: async (req: Request, res: Response) => {    
+  update: async (req: Request, res: Response) => {
     const id = req.query.id as string;
     const { level, number, letter } = req.body;
     if (!id) {
@@ -61,8 +61,8 @@ const CoursesController = {
         result: false,
         message: 'All fields are required',
       });
-    }  
-    try {    
+    }
+    try {
       const course = await prisma.course.update({
         where: {
           id: id,
@@ -94,39 +94,25 @@ const CoursesController = {
   },
   delete: async (req: Request, res: Response) => {
     try {
-      const { level, number, letter } = req.body;
-      if (!level) {
-        return res.status(400).json({ message: "Level is required" });
-      }
-      let course = await prisma.student.findFirst({
-        where: {
-          level,
-        },
-      });
-      if (course) {
+      const id = req.query.id as string;
+      if (!req.query.id) {
         return res.status(400).json({
           result: false,
-          message: "Id already exists",
+          message: "Id is required",
         });
       }
-      course = await prisma.course.create({
-        data: {
-          level,
-          number,
-          letter,
+      const course = await prisma.course.delete({
+        where: {
+          id
         },
       });
       if (course) {
-        return res.status(201).json({
+        return res.status(200).json({
           result: true,
-          message: "Course created",
+          message: "Course deleted",
           course,
         });
       }
-      return res.status(400).json({
-        result: false,
-        message: "Course not created",
-      });
     } catch (error) {
       console.log(error);
       res.status(500).json({
