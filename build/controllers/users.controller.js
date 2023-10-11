@@ -4,6 +4,12 @@ import jwt from 'jsonwebtoken';
 import sendEmail from '../email/email.js';
 import { jwt_secret, bcrypt_rounds, fronend_url, backend_url } from '../config/environment.js';
 const passwordSalt = bcrypt.genSaltSync(bcrypt_rounds);
+var Roles;
+(function (Roles) {
+    Roles[Roles["ADMIN"] = 0] = "ADMIN";
+    Roles[Roles["USER"] = 1] = "USER";
+    Roles[Roles["TEACHER"] = 2] = "TEACHER";
+})(Roles || (Roles = {}));
 const UsersController = {
     login: async (req, res) => {
         const { email, password } = req.body;
@@ -307,6 +313,7 @@ const UsersController = {
                 },
                 data: {
                     active: false,
+                    updatedAt: new Date()
                 },
             });
             if (user) {
@@ -329,6 +336,55 @@ const UsersController = {
             });
         }
     },
+    assignRole: async (req, res) => {
+        const { role, id } = req.body;
+        if (!id) {
+            return res.status(400).json({
+                result: false,
+                message: 'Id is required',
+            });
+        }
+        if (!role) {
+            return res.status(400).json({
+                result: false,
+                message: 'Role field is required',
+            });
+        }
+        if (!(role in Roles)) {
+            return res.status(400).json({
+                result: false,
+                message: `${role} is not an assignable role`,
+            });
+        }
+        try {
+            const user = await prisma.user.update({
+                where: {
+                    id: id,
+                },
+                data: {
+                    role: role,
+                    updatedAt: new Date()
+                },
+            });
+            if (user) {
+                return res.status(200).json({
+                    result: true,
+                    message: 'Role successfully assigned',
+                    user,
+                });
+            }
+        }
+        catch (error) {
+            let message = 'Internal server error';
+            if (error.code === 'P2025') {
+                message = 'User not found';
+            }
+            res.status(500).json({
+                result: false,
+                message: message
+            });
+        }
+    }
 };
 export default UsersController;
 //# sourceMappingURL=users.controller.js.map
