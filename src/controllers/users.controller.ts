@@ -310,6 +310,7 @@ const UsersController = {
       })
     }
   },
+
   delete: async (req: Request, res: Response) => {
     const id = req.query.id as string;
     if (!req.query.id) {
@@ -325,6 +326,7 @@ const UsersController = {
         },
         data: {
           active: false,
+          updatedAt: new Date()
         },
       });
       if (user) {
@@ -346,9 +348,9 @@ const UsersController = {
       })
     }
   },
-  assignRole: async(req: Request, res: Response)=>{
-    const id = req.query.id as string;
-    const { role } = req.body;
+
+  assignRole: async (req: Request, res: Response) => {
+    const { role, id } = req.body;
     if (!id) {
       return res.status(400).json({
         result: false,
@@ -366,7 +368,7 @@ const UsersController = {
         result: false,
         message: `${role} is not an assignable role`,
       });
-      }
+    }
     try {
       const user = await prisma.user.update({
         where: {
@@ -374,6 +376,7 @@ const UsersController = {
         },
         data: {
           role: role,
+          updatedAt: new Date()
         },
       });
       if (user) {

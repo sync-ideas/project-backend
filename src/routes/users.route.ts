@@ -44,6 +44,7 @@ usersRouter.delete(
 
 usersRouter.put(
   '/users/assignrole',
+  passport.authenticate('adminJWT', { session: false }),
   UsersController.assignRole
 );
 

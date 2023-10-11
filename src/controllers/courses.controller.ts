@@ -2,11 +2,39 @@ import { Request, Response } from "express-serve-static-core";
 import { prisma } from "../config/prisma.client.js";
 
 const CoursesController = {
+
+  getAll: async (req: Request, res: Response) => {
+    try {
+      const courses = await prisma.course.findMany({
+        where: {
+          active: true
+        }
+      });
+      if (courses && courses.length > 0) {
+        return res.status(200).json({
+          result: true,
+          message: 'Courses found',
+          courses
+        })
+      }
+      return res.status(404).json({
+        result: false,
+        message: 'Courses not found'
+      })
+    } catch (error) {
+      console.log(error)
+      res.status(500).json({
+        result: false,
+        message: 'Internal server error'
+      })
+    }
+  },
+
   create: async (req: Request, res: Response) => {
     try {
       const { level, number, letter } = req.body;
       if (!level || !number || !letter) {
-        return res.status(400).json({ message: "Level is required" });
+        return res.status(400).json({ message: "Level, number and letter is required" });
       }
       let course = await prisma.course.findFirst({
         where: {
@@ -47,16 +75,10 @@ const CoursesController = {
       });
     }
   },
+
   update: async (req: Request, res: Response) => {
-    const id = req.query.id as string;
-    const { level, number, letter } = req.body;
-    if (!id) {
-      return res.status(400).json({
-        result: false,
-        message: 'ID is required',
-      });
-    }
-    if (!level || !number || !letter) {
+    const { id, level, number, letter } = req.body;
+    if (!id || !level || !number || !letter) {
       return res.status(400).json({
         result: false,
         message: 'All fields are required',
@@ -66,12 +88,13 @@ const CoursesController = {
       const course = await prisma.course.update({
         where: {
           id: id,
+          active: true,
         },
         data: {
           level,
           number,
           letter,
-          updatedAt: new Date
+          updatedAt: new Date()
         },
       });
       if (course) {
@@ -101,10 +124,15 @@ const CoursesController = {
           message: "Id is required",
         });
       }
-      const course = await prisma.course.delete({
+      const course = await prisma.course.update({
         where: {
-          id
+          id,
+          active: true,
         },
+        data: {
+          active: false,
+          updatedAt: new Date()
+        }
       });
       if (course) {
         return res.status(200).json({
@@ -121,6 +149,72 @@ const CoursesController = {
       });
     }
   },
+
+  getDeleted: async (req: Request, res: Response) => {
+    try {
+      const courses = await prisma.course.findMany({
+        where: {
+          active: false
+        }
+      });
+      if (courses && courses.length > 0) {
+        return res.status(200).json({
+          result: true,
+          message: 'Courses found',
+          courses
+        })
+      }
+      return res.status(404).json({
+        result: false,
+        message: 'Courses not found'
+      })
+    } catch (error) {
+      console.log(error)
+      res.status(500).json({
+        result: false,
+        message: 'Internal server error'
+      })
+    }
+  },
+
+  restore: async (req: Request, res: Response) => {
+    try {
+      if (!req.query.id) {
+        return res.status(400).json({
+          result: false,
+          message: 'Id is required'
+        })
+      }
+      const id = req.query.id as string
+      const course = await prisma.course.update({
+        where: {
+          id: id,
+          active: false
+        },
+        data: {
+          active: true,
+          updatedAt: new Date()
+        }
+      });
+      if (course) {
+        return res.status(200).json({
+          result: true,
+          message: 'Course restored'
+        })
+      }
+      return res.status(404).json({
+        result: false,
+        message: 'Course not found'
+      })
+    } catch (error) {
+      console.log(error)
+      res.status(500).json({
+        result: false,
+        message: 'Internal server error'
+      })
+    }
+  }
+
 };
 
 export default CoursesController;
