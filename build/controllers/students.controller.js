@@ -110,7 +110,8 @@ const StudentsController = {
                 data: {
                     manual_id,
                     fullname,
-                    contact_phone
+                    contact_phone,
+                    updatedAt: new Date()
                 }
             });
             if (student) {
@@ -150,7 +151,8 @@ const StudentsController = {
                     active: true
                 },
                 data: {
-                    active: false
+                    active: false,
+                    updatedAt: new Date()
                 }
             });
             if (student) {
@@ -218,7 +220,8 @@ const StudentsController = {
                     active: false
                 },
                 data: {
-                    active: true
+                    active: true,
+                    updatedAt: new Date()
                 }
             });
             if (student) {

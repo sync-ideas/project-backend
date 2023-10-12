@@ -9,5 +9,6 @@ usersRouter.post('/users/forgotpassword', UsersController.forgotPassword);
 usersRouter.post('/users/resetpassword', UsersController.resetPassword);
 usersRouter.get('/users', passport.authenticate('adminJWT', { session: false }), UsersController.getUsers);
 usersRouter.delete('/users/delete', passport.authenticate('adminJWT', { session: false }), UsersController.delete);
+usersRouter.put('/users/assignrole', passport.authenticate('adminJWT', { session: false }), UsersController.assignRole);
 export default usersRouter;
 //# sourceMappingURL=users.route.js.map

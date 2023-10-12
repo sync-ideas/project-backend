@@ -1,6 +1,5 @@
 import express from 'express';
 import UsersController from '../controllers/users.controller.js';
-
 import passport from '../middlewares/auth.js';
 
 const usersRouter = express.Router();
@@ -44,6 +43,7 @@ usersRouter.delete(
 
 usersRouter.put(
   '/users/assignrole',
+  passport.authenticate('adminJWT', { session: false }),
   UsersController.assignRole
 );
 
