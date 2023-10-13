@@ -36,13 +36,13 @@ usersRouter.get(
 );
 
 usersRouter.delete(
-  '/users/delete',
+  '/users/delete/:user_id',
   passport.authenticate('adminJWT', { session: false }),
   UsersController.delete
 );
 
 usersRouter.put(
-  '/users/assignrole',
+  '/users/assignrole/:user_id',
   passport.authenticate('adminJWT', { session: false }),
   UsersController.assignRole
 );

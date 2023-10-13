@@ -98,9 +98,15 @@ const StudentsController = {
 
   update: async (req: Request, res: Response) => {
     try {
-      const { id, manual_id, fullname, contact_phone } = req.body
-      if (!id || manual_id === undefined || !fullname || contact_phone === undefined) {
-        console.log(id, manual_id, fullname, contact_phone)
+      const id = parseInt(req.params.student_id as string);
+      if (!id) {
+        return res.status(400).json({
+          result: false,
+          message: 'Id is required',
+        });
+      }
+      const { manual_id, fullname, contact_phone } = req.body
+      if (manual_id === undefined || !fullname || contact_phone === undefined) {
         return res.status(400).json({
           result: false,
           message: 'All fields are required'
@@ -136,18 +142,12 @@ const StudentsController = {
 
   delete: async (req: Request, res: Response) => {
     try {
-      if (!req.query.id) {
+      const id = parseInt(req.params.student_id as string);
+      if (!id) {
         return res.status(400).json({
           result: false,
-          message: 'Id is required'
-        })
-      }
-      const id = parseInt(req.query.id as string)
-      if (isNaN(id)) {
-        return res.status(400).json({
-          result: false,
-          message: 'Id is not valid'
-        })
+          message: 'Id is required',
+        });
       }
       const student = await prisma.student.update({
         where: {
@@ -211,13 +211,13 @@ const StudentsController = {
 
   restore: async (req: Request, res: Response) => {
     try {
-      if (!req.query.id) {
+      const id = parseInt(req.params.student_id as string);
+      if (!id) {
         return res.status(400).json({
           result: false,
-          message: 'Id is required'
-        })
+          message: 'Id is required',
+        });
       }
-      const id = parseInt(req.query.id as string)
       const student = await prisma.student.update({
         where: {
           id: id,
