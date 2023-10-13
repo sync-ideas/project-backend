@@ -17,13 +17,13 @@ coursesRouter.post(
 );
 
 coursesRouter.put(
-    '/courses/update',
+    '/courses/update/:course_id',
     passport.authenticate('adminJWT', { session: false }),
     CoursesController.update
 )
 
 coursesRouter.delete(
-    '/courses/delete',
+    '/courses/delete/:course_id',
     passport.authenticate('adminJWT', { session: false }),
     CoursesController.delete
 );
@@ -35,7 +35,7 @@ coursesRouter.get(
 )
 
 coursesRouter.put(
-    '/courses/restore',
+    '/courses/restore/:course_id',
     passport.authenticate('adminJWT', { session: false }),
     CoursesController.restore
 )

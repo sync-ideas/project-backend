@@ -312,8 +312,8 @@ const UsersController = {
   },
 
   delete: async (req: Request, res: Response) => {
-    const id = req.query.id as string;
-    if (!req.query.id) {
+    const id = req.params.user_id as string;
+    if (!id) {
       return res.status(400).json({
         result: false,
         message: 'Id is required',
@@ -350,7 +350,8 @@ const UsersController = {
   },
 
   assignRole: async (req: Request, res: Response) => {
-    const { role, id } = req.body;
+    const id = req.params.user_id as string;
+    const { role } = req.body;
     if (!id) {
       return res.status(400).json({
         result: false,

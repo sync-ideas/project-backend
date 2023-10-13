@@ -17,13 +17,13 @@ studentsRouter.post(
 );
 
 studentsRouter.put(
-  '/students/update',
+  '/students/update/:student_id',
   passport.authenticate('userJWT', { session: false }),
   StudentsController.update
 )
 
 studentsRouter.delete(
-  '/students/delete',
+  '/students/delete/:student_id',
   passport.authenticate('userJWT', { session: false }),
   StudentsController.delete
 )
@@ -35,7 +35,7 @@ studentsRouter.get(
 )
 
 studentsRouter.put(
-  '/students/restore',
+  '/students/restore/:student_id',
   passport.authenticate('userJWT', { session: false }),
   StudentsController.restore
 )

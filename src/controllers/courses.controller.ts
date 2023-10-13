@@ -77,8 +77,15 @@ const CoursesController = {
   },
 
   update: async (req: Request, res: Response) => {
-    const { id, level, number, letter } = req.body;
-    if (!id || !level || !number || !letter) {
+    const id = req.params.course_id as string;
+    if (!id) {
+      return res.status(400).json({
+        result: false,
+        message: 'Id is required',
+      });
+    }
+    const { level, number, letter } = req.body;
+    if (!level || !number || !letter) {
       return res.status(400).json({
         result: false,
         message: 'All fields are required',
@@ -115,13 +122,14 @@ const CoursesController = {
       })
     }
   },
+
   delete: async (req: Request, res: Response) => {
     try {
-      const id = req.query.id as string;
-      if (!req.query.id) {
+      const id = req.params.course_id as string;
+      if (!id) {
         return res.status(400).json({
           result: false,
-          message: "Id is required",
+          message: 'Id is required',
         });
       }
       const course = await prisma.course.update({
@@ -179,13 +187,13 @@ const CoursesController = {
 
   restore: async (req: Request, res: Response) => {
     try {
-      if (!req.query.id) {
+      const id = req.params.course_id as string;
+      if (!id) {
         return res.status(400).json({
           result: false,
-          message: 'Id is required'
-        })
+          message: 'Id is required',
+        });
       }
-      const id = req.query.id as string
       const course = await prisma.course.update({
         where: {
           id: id,
