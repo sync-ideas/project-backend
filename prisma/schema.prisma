@@ -9,7 +9,7 @@ generator client {
 
 // Modelo de usuario
 model User {
-  id        String    @id @default(cuid())
+  id        Int       @id @default(autoincrement())
   email     String    @unique
   fullname  String
   password  String
@@ -47,7 +47,7 @@ model Student {
 
 // Modelo de curso
 model Course {
-  id        String    @id @default(cuid())
+  id        Int       @id @default(autoincrement())
   level     String
   number    Int
   letter    String
@@ -61,13 +61,13 @@ model Course {
 
 // Modelo de asignatura
 model Subject {
-  id             String          @id @default(cuid())
+  id             Int             @id @default(autoincrement())
   name           String
   level          String
   teacher        User            @relation(fields: [teacherId], references: [id])
-  teacherId      String
+  teacherId      Int
   course         Course          @relation(fields: [courseId], references: [id])
-  courseId       String
+  courseId       Int
   schelude       Json[]
   startSubjet    DateTime
   endSubject     DateTime
@@ -82,10 +82,10 @@ model Subject {
 
 // Modelo de asistencias
 model Attendance {
-  id        String   @id @default(cuid())
+  id        Int      @id @default(autoincrement())
   date      DateTime
   subject   Subject  @relation(fields: [subjectId], references: [id])
-  subjectId String
+  subjectId Int
   student   Student  @relation(fields: [studentId], references: [id])
   studentId Int
   registred Boolean  @default(false)
@@ -95,10 +95,10 @@ model Attendance {
 
 // Modelo de inasistencias
 model Nonattendance {
-  id        String   @id @default(cuid())
+  id        Int      @id @default(autoincrement())
   date      DateTime
   subject   Subject  @relation(fields: [subjectId], references: [id])
-  subjectId String
+  subjectId Int
   student   Student  @relation(fields: [studentId], references: [id])
   studentId Int
 
