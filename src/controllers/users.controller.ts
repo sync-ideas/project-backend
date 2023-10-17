@@ -312,7 +312,7 @@ const UsersController = {
   },
 
   delete: async (req: Request, res: Response) => {
-    const id = req.params.user_id as string;
+    const id = parseInt(req.params.user_id as string);
     if (!id) {
       return res.status(400).json({
         result: false,
@@ -350,7 +350,7 @@ const UsersController = {
   },
 
   assignRole: async (req: Request, res: Response) => {
-    const id = req.params.user_id as string;
+    const id = parseInt(req.params.user_id as string);
     const { role } = req.body;
     if (!id) {
       return res.status(400).json({

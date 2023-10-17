@@ -77,7 +77,7 @@ const CoursesController = {
   },
 
   update: async (req: Request, res: Response) => {
-    const id = req.params.course_id as string;
+    const id = parseInt(req.params.course_id as string);
     if (!id) {
       return res.status(400).json({
         result: false,
@@ -125,7 +125,7 @@ const CoursesController = {
 
   delete: async (req: Request, res: Response) => {
     try {
-      const id = req.params.course_id as string;
+      const id = parseInt(req.params.course_id as string);
       if (!id) {
         return res.status(400).json({
           result: false,
@@ -187,7 +187,7 @@ const CoursesController = {
 
   restore: async (req: Request, res: Response) => {
     try {
-      const id = req.params.course_id as string;
+      const id = parseInt(req.params.course_id as string);
       if (!id) {
         return res.status(400).json({
           result: false,
