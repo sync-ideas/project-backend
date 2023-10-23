@@ -20,7 +20,6 @@ app.use('/api', usersRouter);
 app.use('/api', coursesRouter)
 app.use('/api', subjectsRouter)
 
-
 // ---------- Start server ---------
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
