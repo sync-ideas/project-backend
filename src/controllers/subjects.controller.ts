@@ -2,6 +2,7 @@ import { Request, Response } from 'express-serve-static-core';
 import { prisma } from '../config/prisma.client.js';
 
 const SubjectsController = {
+
   create: async (res: Response, req: Request) => {
     try {
       const { name, level, teacher, course } = req.body;
@@ -56,6 +57,7 @@ const SubjectsController = {
       });
     }
   },
+
   update: async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.subject_id as string);
@@ -98,6 +100,7 @@ const SubjectsController = {
       });
     }
   },
+
   delete: async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.subject_id as string);
