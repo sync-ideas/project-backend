@@ -17,9 +17,8 @@ app.use(cors());
 // ---------- Routes ---------------
 app.use('/api', studentsRouter);
 app.use('/api', usersRouter);
-app.use('/api', coursesRouter);
-app.use('/api', subjectsRouter);
-
+app.use('/api', coursesRouter)
+app.use('/api', subjectsRouter)
 
 // ---------- Start server ---------
 app.listen(PORT, () => {
