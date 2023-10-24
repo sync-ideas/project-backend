@@ -135,6 +135,49 @@ const SubjectsController = {
       });
     }
   },
+  getAll: async (req: Request, res: Response) => {
+    const course = req.query.course as string;
+    let courseFilter;
+    console.log(course);
+    try {
+      if (course) {
+        courseFilter = await prisma.course.findFirst({
+          where: {
+            level: course, // asumiendo que el level del curso es único
+          },
+        });
+
+        if (!courseFilter) {
+          return res.status(404).json({
+            result: false,
+            message: 'Course not found',
+          });
+        }
+      }
+      const subjects = await prisma.subject.findMany({
+        where: {
+          active: true,
+          course: courseFilter ? courseFilter : undefined 
+        },
+      });
+      if (subjects && subjects.length > 0) {
+        return res.status(200).json({
+          result: true,
+          subjects,
+        });
+      }
+      return res.status(404).json({
+        result: false,
+        message: 'Subjects not found',
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({
+        result: false,
+        message: 'Internal server error',
+      });
+    }
+  },
 };
 
 export default SubjectsController;
