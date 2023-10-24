@@ -69,8 +69,8 @@ model Subject {
   course         Course?         @relation(fields: [courseId], references: [id])
   courseId       Int?
   schelude       Json[]
-  startSubjet    DateTime
-  endSubject     DateTime
+  startSubjet    DateTime?
+  endSubject     DateTime?
   active         Boolean         @default(false)
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
