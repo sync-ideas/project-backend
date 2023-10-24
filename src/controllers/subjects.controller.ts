@@ -132,6 +132,7 @@ const SubjectsController = {
       res.status(500).json({
         result: false,
         message: 'Internal server error',
+        error: error,
       });
     }
   },
@@ -157,7 +158,7 @@ const SubjectsController = {
       const subjects = await prisma.subject.findMany({
         where: {
           active: true,
-          course: courseFilter ? courseFilter : undefined 
+          course: courseFilter ? courseFilter : undefined
         },
       });
       if (subjects && subjects.length > 0) {

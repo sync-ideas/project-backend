@@ -34,7 +34,7 @@ model Student {
   id             Int             @id @default(autoincrement())
   manual_id      String
   fullname       String
-  contact_phone  String
+  contact_phone  String?
   active         Boolean         @default(true)
   subjects       Subject[] // Relación muchos a muchos con Subject
   attendances    Attendance[] // Relación uno a muchos con Attendance
@@ -64,14 +64,14 @@ model Subject {
   id             Int             @id @default(autoincrement())
   name           String
   level          String
-  teacher        User            @relation(fields: [teacherId], references: [id])
-  teacherId      Int
-  course         Course          @relation(fields: [courseId], references: [id])
-  courseId       Int
+  teacher        User?           @relation(fields: [teacherId], references: [id])
+  teacherId      Int?
+  course         Course?         @relation(fields: [courseId], references: [id])
+  courseId       Int?
   schelude       Json[]
-  startSubjet    DateTime
-  endSubject     DateTime
-  active         Boolean         @default(true)
+  startSubjet    DateTime?
+  endSubject     DateTime?
+  active         Boolean         @default(false)
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   students       Student[] // Relación muchos a muchos con Student
