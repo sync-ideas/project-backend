@@ -71,6 +71,7 @@ model Subject {
   schelude       Json[]
   startSubjet    DateTime
   endSubject     DateTime
+  active         Boolean         @default(true)
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   students       Student[] // Relación muchos a muchos con Student

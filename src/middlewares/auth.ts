@@ -14,17 +14,10 @@ passport.use(
     },
     async (payload, done) => {
       try {
-        const user = await prisma.user.findUnique({
-          where: {
-            id: payload.id,
-          },
-        });
-
-        if (!user) {
+        if (!payload.id) {
           return done(null, false);
         }
-
-        return done(null, user);
+        return done(null, payload);
       } catch (error) {
         return done(error);
       }
