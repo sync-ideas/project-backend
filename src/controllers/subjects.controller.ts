@@ -3,7 +3,7 @@ import { prisma } from "../config/prisma.client.js";
 
 
 const SubjectsController = {
-  create: async (res: Response, req: Request) => {
+  create: async (req: Request,res:Response) => {
     try {
       const { name, level, teacher,course } = req.body
       console.log(name, level)
