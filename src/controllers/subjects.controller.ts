@@ -3,63 +3,50 @@ import { prisma } from '../config/prisma.client.js';
 
 const SubjectsController = {
 
-  create: async (res: Response, req: Request) => {
+
+  create : async (req: Request, res: Response) => {
+
     try {
-      const { name, level, teacher, course } = req.body;
-      console.log(name, level);
+      const { name, level, course } = req.body;
       if (!name || !level) {
         return res
           .status(400)
-          .json({ message: 'Name, level and teacher is required' });
-      }
-      if (name) {
-        const subject = prisma.subject.findMany({
+          .json({message: 'Name and level is required' });
+      }else {
+        const subject = await prisma.subject.findFirst({ 
           where: {
             name,
             level,
-          },
-        });
-        if (subject) {
-          return res.status(400).json({
-            result: false,
+        }
+      });
+        
+      if (subject) {
+          return res.status(400).json({ result: false,
             message: 'Subject already exists',
           });
         }
       }
-
-      const subject = await prisma.subject.create({
+  
+    const subject = await prisma.subject.create({
         data: {
           name,
           level,
-          teacher,
-          course,
-          startSubjet: 'startSubjet',
-          endSubject: 'endSubject',
+          courseId: course,
         },
       });
-
-      if (subject) {
-        return res.status(201).json({
-          result: true,
-          message: 'Subject created',
-        });
-      } else {
-        return res.status(400).json({
-          result: false,
-          message: 'Subject not created',
-        });
-      }
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({
-        result: false,
-        message: 'Internal server error',
+      return res.status(200).json({ result: true,
+        subject: subject,
       });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
     }
-  },
+
+  }
+  ,
+  //!Error 404
 
   update: async (req: Request, res: Response) => {
-    try {
+    try { 
       const id = parseInt(req.params.subject_id as string);
       if (!id) {
         return res.status(400).json({
@@ -113,7 +100,7 @@ const SubjectsController = {
       const subject = await prisma.subject.update({
         where: {
           id: id,
-          active: true,
+         active: true,
         },
         data: {
           active: false,
@@ -157,7 +144,9 @@ const SubjectsController = {
       }
       const subjects = await prisma.subject.findMany({
         where: {
+
           active: true,
+
           course: courseFilter ? courseFilter : undefined
         },
       });
