@@ -3,7 +3,9 @@ import { prisma } from '../config/prisma.client.js';
 
 const SubjectsController = {
 
+
   create : async (req: Request, res: Response) => {
+
     try {
       const { name, level, course } = req.body;
       if (!name || !level) {
@@ -38,9 +40,11 @@ const SubjectsController = {
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }
+
   }
   ,
   //!Error 404
+
   update: async (req: Request, res: Response) => {
     try { 
       const id = parseInt(req.params.subject_id as string);
@@ -140,7 +144,9 @@ const SubjectsController = {
       }
       const subjects = await prisma.subject.findMany({
         where: {
-         // active: true,
+
+          active: true,
+
           course: courseFilter ? courseFilter : undefined
         },
       });
