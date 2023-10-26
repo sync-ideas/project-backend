@@ -40,8 +40,9 @@ const SubjectsController = {
     }
   }
   ,
+  //!Error 404
   update: async (req: Request, res: Response) => {
-    try {
+    try { 
       const id = parseInt(req.params.subject_id as string);
       if (!id) {
         return res.status(400).json({
