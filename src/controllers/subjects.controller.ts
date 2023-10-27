@@ -2,51 +2,42 @@ import { Request, Response } from 'express-serve-static-core';
 import { prisma } from '../config/prisma.client.js';
 
 const SubjectsController = {
-
-
-  create : async (req: Request, res: Response) => {
-
+  create: async (req: Request, res: Response) => {
     try {
       const { name, level, course } = req.body;
       if (!name || !level) {
-        return res
-          .status(400)
-          .json({message: 'Name and level is required' });
-      }else {
-        const subject = await prisma.subject.findFirst({ 
+        return res.status(400).json({ message: 'Name and level is required' });
+      } else {
+        const subject = await prisma.subject.findFirst({
           where: {
             name,
             level,
-        }
-      });
-        
-      if (subject) {
-          return res.status(400).json({ result: false,
-            message: 'Subject already exists',
-          });
+          },
+        });
+
+        if (subject) {
+          return res
+            .status(400)
+            .json({ result: false, message: 'Subject already exists' });
         }
       }
-  
-    const subject = await prisma.subject.create({
+
+      const subject = await prisma.subject.create({
         data: {
           name,
           level,
           courseId: course,
         },
       });
-      return res.status(200).json({ result: true,
-        subject: subject,
-      });
+      return res.status(200).json({ result: true, subject: subject });
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }
-
-  }
-  ,
+  },
   //!Error 404
 
   update: async (req: Request, res: Response) => {
-    try { 
+    try {
       const id = parseInt(req.params.subject_id as string);
       if (!id) {
         return res.status(400).json({
@@ -100,7 +91,7 @@ const SubjectsController = {
       const subject = await prisma.subject.update({
         where: {
           id: id,
-         active: true,
+          active: true,
         },
         data: {
           active: false,
@@ -144,10 +135,8 @@ const SubjectsController = {
       }
       const subjects = await prisma.subject.findMany({
         where: {
-
           active: true,
-
-          course: courseFilter ? courseFilter : undefined
+          course: courseFilter ? courseFilter : undefined,
         },
       });
       if (subjects && subjects.length > 0) {
@@ -165,6 +154,66 @@ const SubjectsController = {
       res.status(500).json({
         result: false,
         message: 'Internal server error',
+        error: error,
+      });
+    }
+  },
+  assignCourse: async (req: Request, res: Response) => {
+    const id = parseInt(req.params.subject_id as string);
+    const { course } = req.body;
+    let courseFilter;
+    if (!id) {
+      return res.status(400).json({
+        result: false,
+        message: 'Id is required',
+      });
+    }
+    if (!course) {
+      return res.status(400).json({
+        result: false,
+        message: 'Course field is required',
+      });
+    }
+    if (course) {
+      courseFilter = await prisma.course.findFirst({
+        where: {
+          level: course, // asumiendo que el level del curso es único
+        },
+      });
+    }
+    if (!courseFilter) {
+      return res.status(400).json({
+        result: false,
+        message: `${course} not found`,
+      });
+    }
+    try {
+      const subject = await prisma.subject
+        .update({
+          where: {
+            id: id,
+          },
+          data: {
+            courseId: courseFilter.id,
+            updatedAt: new Date(),
+          },
+        })
+        .course();
+      if (subject) {
+        return res.status(200).json({
+          result: true,
+          message: 'Course successfully assigned',
+          subject,
+        });
+      }
+    } catch (error) {
+      let message = 'Internal server error';
+      if (error.code === 'P2025') {
+        message = 'Subject not found';
+      }
+      res.status(500).json({
+        result: false,
+        message: message,
       });
     }
   },
