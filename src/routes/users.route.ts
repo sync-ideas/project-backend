@@ -47,4 +47,10 @@ usersRouter.put(
   UsersController.assignRole
 );
 
+usersRouter.put(
+  '/users/:user_id',
+  passport.authenticate('adminJWT', { session: false }),
+  UsersController.update
+);
+
 export default usersRouter

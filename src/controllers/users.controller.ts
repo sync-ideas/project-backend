@@ -398,7 +398,38 @@ const UsersController = {
       })
     }
   }
-
+  ,
+  update: async (req: Request, res: Response) => {
+    const id = parseInt(req.params.user_id as string);
+    const {fullName} = req.body;
+    try {
+      if (!id) {
+        return res.status(400).json({
+          result: false,
+          message: 'Id is required',
+        });
+      }
+      const user = await prisma.user.update({
+        where: {
+          id: id,
+        },
+        data: {
+          fullname:fullName,
+          updatedAt: new Date()
+        },
+      });
+      return res.status(200).json({
+        message: 'User account Activated successfully',
+        user,
+      });
+    }catch (error) {
+      console.log(error);
+      return res.status(500).json({
+        result: false,
+        message: 'Internal server error'
+      });
+    }
+  },
 };
 
 export default UsersController;

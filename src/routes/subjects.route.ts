@@ -11,7 +11,7 @@ subjectsRouter.post(
 );
 
 subjectsRouter.put(
-  '/subjects/update/:subjects_id',
+  '/subjects/update/:subject_id',
   passport.authenticate('adminJWT', { session: false }),
   SubjectsController.update
 )
