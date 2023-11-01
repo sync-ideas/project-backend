@@ -28,4 +28,10 @@ subjectsRouter.get(
   SubjectsController.getAll
 )
 
+subjectsRouter.put(
+  '/subjects/assigncourse/:subject_id',
+  passport.authenticate('adminJWT', { session: false }),
+  SubjectsController.assignCourse
+);
+
 export default subjectsRouter;
