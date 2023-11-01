@@ -28,7 +28,7 @@ const UsersController = {
       });
     }
     try {
-      const user = await prisma.user.findUniqueOrThrow({
+      const user = await prisma.user.findUnique({
         where: {
           email,
         },
@@ -52,7 +52,6 @@ const UsersController = {
         result: true
       });
     } catch (error) {
-      console.error(error);
       return res.status(500).json({
         result: false,
         message: 'Internal server error'
@@ -75,7 +74,7 @@ const UsersController = {
         },
       });
       if (user) {
-        return res.status(400).json({
+        return res.status(401).json({
           result: false,
           message: 'Email already exists',
         });
@@ -109,7 +108,7 @@ const UsersController = {
           return res.status(201).json({
             result: true,
             message:
-              'User created successfully, Please check your email to activate your account',
+              'User created successfully. Please check your email to activate your account.',
             user,
           });
         }

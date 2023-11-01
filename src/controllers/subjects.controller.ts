@@ -4,37 +4,39 @@ import { prisma } from '../config/prisma.client.js';
 const SubjectsController = {
 
 
-  create : async (req: Request, res: Response) => {
+  create: async (req: Request, res: Response) => {
 
     try {
       const { name, level, course } = req.body;
       if (!name || !level) {
         return res
           .status(400)
-          .json({message: 'Name and level is required' });
-      }else {
-        const subject = await prisma.subject.findFirst({ 
+          .json({ message: 'Name and level is required' });
+      } else {
+        const subject = await prisma.subject.findFirst({
           where: {
             name,
             level,
-        }
-      });
-        
-      if (subject) {
-          return res.status(400).json({ result: false,
+          }
+        });
+
+        if (subject) {
+          return res.status(400).json({
+            result: false,
             message: 'Subject already exists',
           });
         }
       }
-  
-    const subject = await prisma.subject.create({
+
+      const subject = await prisma.subject.create({
         data: {
           name,
           level,
           courseId: course,
         },
       });
-      return res.status(200).json({ result: true,
+      return res.status(200).json({
+        result: true,
         subject: subject,
       });
     } catch (error) {
@@ -46,7 +48,7 @@ const SubjectsController = {
   //!Error 404
 
   update: async (req: Request, res: Response) => {
-    try { 
+    try {
       const id = parseInt(req.params.subject_id as string);
       if (!id) {
         return res.status(400).json({
@@ -54,8 +56,8 @@ const SubjectsController = {
           message: 'Id is required',
         });
       }
-      const { name, level, teacher } = req.body;
-      if (name === undefined || !level || teacher === undefined) {
+      const { name, level, teacherId } = req.body;
+      if (name === undefined || !level || teacherId === undefined) {
         return res.status(400).json({
           result: false,
           message: 'All fields are required',
@@ -68,7 +70,7 @@ const SubjectsController = {
         data: {
           name,
           level,
-          teacher,
+          teacherId,
           updatedAt: new Date(),
         },
       });
@@ -100,7 +102,7 @@ const SubjectsController = {
       const subject = await prisma.subject.update({
         where: {
           id: id,
-         active: true,
+          active: true,
         },
         data: {
           active: false,
