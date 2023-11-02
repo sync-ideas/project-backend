@@ -18,4 +18,5 @@ app.use('/api', subjectsRouter);
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+export default app;
 //# sourceMappingURL=app.js.map

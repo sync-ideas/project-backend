@@ -2,23 +2,32 @@ import { Request, Response } from 'express-serve-static-core';
 import { prisma } from '../config/prisma.client.js';
 
 const SubjectsController = {
+
+
+
   create: async (req: Request, res: Response) => {
+
     try {
       const { name, level, course } = req.body;
       if (!name || !level) {
-        return res.status(400).json({ message: 'Name and level is required' });
+        return res
+          .status(400)
+          .json({ message: 'Name and level is required' });
+
       } else {
         const subject = await prisma.subject.findFirst({
           where: {
             name,
             level,
-          },
+          }
         });
 
         if (subject) {
-          return res
-            .status(400)
-            .json({ result: false, message: 'Subject already exists' });
+          return res.status(400).json({
+            result: false,
+            message: 'Subject already exists',
+          });
+
         }
       }
 
@@ -29,7 +38,12 @@ const SubjectsController = {
           courseId: course,
         },
       });
-      return res.status(200).json({ result: true, subject: subject });
+
+      return res.status(200).json({
+        result: true,
+        subject: subject,
+      });
+
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }
@@ -45,8 +59,8 @@ const SubjectsController = {
           message: 'Id is required',
         });
       }
-      const { name, level, teacher } = req.body;
-      if (name === undefined || !level || teacher === undefined) {
+      const { name, level, teacherId } = req.body;
+      if (name === undefined || !level || teacherId === undefined) {
         return res.status(400).json({
           result: false,
           message: 'All fields are required',
@@ -59,7 +73,7 @@ const SubjectsController = {
         data: {
           name,
           level,
-          teacher,
+          teacherId,
           updatedAt: new Date(),
         },
       });
