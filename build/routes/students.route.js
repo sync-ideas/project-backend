@@ -1,6 +1,6 @@
 import express from 'express';
 import StudentsController from '../controllers/students.controller.js';
-import passport from '../middlewares/auth.js';
+import passport from '../middlewares/auth.mid.js';
 const studentsRouter = express.Router();
 studentsRouter.get('/students', passport.authenticate('userJWT', { session: false }), StudentsController.getStudents);
 studentsRouter.post('/students/register', passport.authenticate('userJWT', { session: false }), StudentsController.register);

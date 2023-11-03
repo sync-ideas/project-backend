@@ -41,6 +41,7 @@
     "@types/passport": "^1.0.13",
     "@types/passport-jwt": "^3.0.10",
     "@types/passport-local": "^1.0.36",
+    "@types/qrcode": "^1.5.4",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
@@ -48,6 +49,8 @@
     "jsonwebtoken": "^9.0.2",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
-    "passport-local": "^1.0.0"
+    "passport-local": "^1.0.0",
+    "pdf-lib": "^1.17.1",
+    "qrcode": "^1.5.3"
   }
 }

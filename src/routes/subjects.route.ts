@@ -1,5 +1,5 @@
 import express from 'express';
-import passport from '../middlewares/auth.js';
+import passport from '../middlewares/auth.mid.js';
 import SubjectsController from '../controllers/subjects.controller.js';
 
 const subjectsRouter = express.Router();
