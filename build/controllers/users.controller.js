@@ -1,7 +1,7 @@
 import { prisma } from '../config/prisma.client.js';
 import * as bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import sendEmail from '../email/email.js';
+import sendEmail from '../handlers/email.handler.js';
 import { jwt_secret, bcrypt_rounds, fronend_url, backend_url } from '../config/environment.js';
 const passwordSalt = bcrypt.genSaltSync(bcrypt_rounds);
 var Roles;

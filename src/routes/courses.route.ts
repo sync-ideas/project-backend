@@ -1,6 +1,6 @@
 import express from 'express';
 import CoursesController from '../controllers/courses.controller.js';
-import passport from '../middlewares/auth.js';
+import passport from '../middlewares/auth.mid.js';
 
 const coursesRouter = express.Router();
 

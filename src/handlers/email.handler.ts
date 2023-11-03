@@ -1,6 +1,6 @@
 import sgMail from '@sendgrid/mail'
 import { sendgrid_api_key } from "../config/environment.js"
-import { IEmail } from '../types/emailTypes.js';
+import { IEmail } from '../types/email.types.js';
 
 sgMail.setApiKey(sendgrid_api_key)
 
