@@ -1,6 +1,6 @@
 import supertest from 'supertest';
 import { assert } from 'chai';
-import app from '../../build/app.js';
+import app from '../build/app.js';
 
 describe('----- USERS API LOGIN ------', () => {
 

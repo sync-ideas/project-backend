@@ -1,6 +1,7 @@
 import supertest from 'supertest';
 import { assert } from 'chai';
-import app from '../../build/app.js';
+import app from '../build/app.js';
+import { prisma } from "../build/config/prisma.client.js";
 
 describe('----- USERS API REGISTER ------', () => {
 
@@ -38,6 +39,15 @@ describe('----- USERS API REGISTER ------', () => {
     assert.equal(response.status, 201);
     assert.equal(response.body.result, true);
     assert.exists(response.body.message, 'User created successfully. Please check your email to activate your account.');
+
+    // Elimino usuario creado
+    await prisma.user
+      .delete({
+        where: {
+          email: 'gustavo@fring2.com'
+        }
+      })
+
   }); 
  
  
