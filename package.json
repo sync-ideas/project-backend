@@ -9,7 +9,7 @@
     "build": "tsc",
     "start": "node build/app.js",
     "migrate": "prisma migrate dev",
-    "test": "tsc & mocha test/**/*.spec.js"
+    "test": "tsc & mocha test/**/*.spec.js --exit"
   },
   "keywords": [],
   "author": "",

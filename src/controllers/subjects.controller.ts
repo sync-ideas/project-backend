@@ -3,17 +3,16 @@ import { prisma } from '../config/prisma.client.js';
 
 const SubjectsController = {
 
-
-
   create: async (req: Request, res: Response) => {
-
     try {
       const { name, level, course } = req.body;
       if (!name || !level) {
         return res
           .status(400)
-          .json({ message: 'Name and level is required' });
-
+          .json({
+            result: false,
+            message: 'All fields are required'
+          });
       } else {
         const subject = await prisma.subject.findFirst({
           where: {
@@ -21,16 +20,13 @@ const SubjectsController = {
             level,
           }
         });
-
         if (subject) {
-          return res.status(400).json({
+          return res.status(403).json({
             result: false,
             message: 'Subject already exists',
           });
-
         }
       }
-
       const subject = await prisma.subject.create({
         data: {
           name,
@@ -39,7 +35,7 @@ const SubjectsController = {
         },
       });
 
-      return res.status(200).json({
+      return res.status(201).json({
         result: true,
         subject: subject,
       });
@@ -96,12 +92,6 @@ const SubjectsController = {
   delete: async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.subject_id as string);
-      if (!id) {
-        return res.status(400).json({
-          result: false,
-          message: 'Id is required',
-        });
-      }
       const subject = await prisma.subject.update({
         where: {
           id: id,
@@ -113,14 +103,13 @@ const SubjectsController = {
         },
       });
       if (subject) {
-        return res.status(200).json({
+        return res.status(202).json({
           result: true,
           message: 'Subject deleted',
           subject,
         });
       }
     } catch (error) {
-      console.log(error);
       res.status(500).json({
         result: false,
         message: 'Internal server error',
@@ -128,6 +117,7 @@ const SubjectsController = {
       });
     }
   },
+
   getAll: async (req: Request, res: Response) => {
     const course = req.query.course as string;
     let courseFilter;

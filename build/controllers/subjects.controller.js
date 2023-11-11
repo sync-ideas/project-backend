@@ -6,7 +6,10 @@ const SubjectsController = {
             if (!name || !level) {
                 return res
                     .status(400)
-                    .json({ message: 'Name and level is required' });
+                    .json({
+                    result: false,
+                    message: 'All fields are required'
+                });
             }
             else {
                 const subject = await prisma.subject.findFirst({
@@ -16,7 +19,7 @@ const SubjectsController = {
                     }
                 });
                 if (subject) {
-                    return res.status(400).json({
+                    return res.status(403).json({
                         result: false,
                         message: 'Subject already exists',
                     });
@@ -29,7 +32,7 @@ const SubjectsController = {
                     courseId: course,
                 },
             });
-            return res.status(200).json({
+            return res.status(201).json({
                 result: true,
                 subject: subject,
             });
@@ -85,12 +88,6 @@ const SubjectsController = {
     delete: async (req, res) => {
         try {
             const id = parseInt(req.params.subject_id);
-            if (!id) {
-                return res.status(400).json({
-                    result: false,
-                    message: 'Id is required',
-                });
-            }
             const subject = await prisma.subject.update({
                 where: {
                     id: id,
@@ -102,7 +99,7 @@ const SubjectsController = {
                 },
             });
             if (subject) {
-                return res.status(200).json({
+                return res.status(202).json({
                     result: true,
                     message: 'Subject deleted',
                     subject,
@@ -110,7 +107,6 @@ const SubjectsController = {
             }
         }
         catch (error) {
-            console.log(error);
             res.status(500).json({
                 result: false,
                 message: 'Internal server error',
