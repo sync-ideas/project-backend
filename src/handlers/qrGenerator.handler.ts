@@ -3,45 +3,56 @@ import * as QRCode from 'qrcode';
 
 import { Student } from "../types/data.types.js"
 
-
 const QrGenerator = {
-
   async create(data: Student[]) {
-
     const mm2dot = 2.8352
     const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([210 * mm2dot, 297 * mm2dot]);
-    let file = -1
+    let page = pdfDoc.addPage([220 * mm2dot, 297 * mm2dot]);
+    // const {width,page} = page.getSize()
+    let qrCount=0;
 
     for (let i = 0; i < data.length; i++) {
-
-      let qrCodeImage = await QRCode.toDataURL(JSON.stringify(data[i]));
-      let qrBuffer = Buffer.from(qrCodeImage.split(',')[1], 'base64');
-      let qrImage = await pdfDoc.embedPng(qrBuffer);
-
-      file += i % 3 === 0 ? 1 : 0;
+      const qrCodeImage = await QRCode.toDataURL(JSON.stringify(data[i]));
+      const qrBuffer = Buffer.from(qrCodeImage.match(/,(.*)$/)[1], 'base64');
+      const qrImage = await pdfDoc.embedPng(qrBuffer);
+      
+      // El ancho y el alto de cada QR en puntos
+      const qrWidth = 50 * mm2dot
+      const qrHeight = 50 * mm2dot
+      const pageHeight  = page.getHeight();
+      // El margen horizontal y vertical entre los QR en puntos
+      const qrMarginX =3 * mm2dot;
+      const qrMarginY =5 * mm2dot;
+      console.log(pageHeight )
 
       page.drawImage(qrImage, {
-        x: (70 * i + 10) * mm2dot,
-        y: (10 + file * 70) * mm2dot,
-        width: 50 * mm2dot,
-        height: 50 * mm2dot
-      })
+        x: (i % 4) * (qrWidth + qrMarginX),
+        y: (pageHeight -180) - (Math.floor(i / 4) * (qrHeight + qrMarginY)),
+        width: qrWidth,
+        height: qrHeight,
+      });
 
       page.drawText(data[i].fullname, {
-        x: (70 * i + 22) * mm2dot,
-        y: (56 + file * 70) * mm2dot,
-        size: 12
-      })
+        x: (i % 4) * (qrWidth + qrMarginX),
+        y: (pageHeight -180) - Math.floor(i / 4) * (qrHeight + qrMarginY),
+        size: 12,
+      });
 
       page.drawRectangle({
-        x: (70 * i + 10) * mm2dot,
-        y: (10 + file * 70) * mm2dot,
-        width: 50 * mm2dot,
-        height: 50 * mm2dot,
+        x: (i % 4) * (qrWidth + qrMarginX),
+        y:  (pageHeight -180) - (Math.floor(i / 4) * (qrHeight + qrMarginY)),
+        width: qrWidth,
+        height: qrHeight,
         borderColor: rgb(0, 0, 0),
-        borderWidth: 1
-      })
+        borderWidth: 1,
+      });
+      
+      // Si el conteo llega a 12, crear una nueva página y reiniciar el conteo
+      qrCount++;
+      if (qrCount === 12) {
+        page = pdfDoc.addPage([220 * mm2dot, 297 * mm2dot]);
+        qrCount = 0;
+      }
     }
     try {
       const pdfBytes = await pdfDoc.save();
