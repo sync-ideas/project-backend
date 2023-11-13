@@ -32,7 +32,7 @@ enum Role {
 // Modelo de estudiante
 model Student {
   id             Int             @id @default(autoincrement())
-  manual_id      String
+  internal_id    String?
   fullname       String
   contact_phone  String?
   active         Boolean         @default(true)

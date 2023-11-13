@@ -1,4 +1,5 @@
 import { prisma } from '../config/prisma.client.js';
+import xlsx from 'xlsx';
 const StudentsController = {
     getStudents: async (req, res) => {
         try {
@@ -49,27 +50,27 @@ const StudentsController = {
     },
     register: async (req, res) => {
         try {
-            const { fullname, manual_id, contact_phone } = req.body;
+            const { fullname, internal_id, contact_phone } = req.body;
             if (!fullname) {
                 return res.status(400).json({ message: 'A fullname is required' });
             }
-            if (manual_id) {
+            if (internal_id) {
                 const student = await prisma.student.findFirst({
                     where: {
-                        manual_id
+                        internal_id
                     }
                 });
                 if (student) {
                     return res.status(400).json({
                         result: false,
-                        message: 'Manual id already exists'
+                        message: 'Internal id already exists'
                     });
                 }
             }
             const student = await prisma.student.create({
                 data: {
                     fullname,
-                    manual_id: manual_id || '',
+                    internal_id: internal_id || '',
                     contact_phone: contact_phone || ''
                 }
             });
@@ -93,6 +94,53 @@ const StudentsController = {
             });
         }
     },
+    excelImport: async (req, res) => {
+        try {
+            const file = req.file;
+            const { fullname, internal_id, contact_phone } = req.body;
+            if (!file || !fullname || !contact_phone) {
+                return res.status(400).json({
+                    result: false,
+                    message: 'File and column names are required'
+                });
+            }
+            const workbook = xlsx.read(file.buffer, { type: 'buffer' });
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            const excelData = xlsx.utils.sheet_to_json(worksheet, { header: 1 });
+            const columns = Array.isArray(excelData[0]) ? excelData[0] : [];
+            const fullname_index = columns.findIndex((col) => col.trim() === fullname);
+            const internal_id_index = internal_id ? columns.findIndex((col) => col.trim() === internal_id) : -1;
+            const contact_phone_index = columns.findIndex((col) => col.trim() === contact_phone);
+            const createdStudents = [];
+            for (let i = 1; i < excelData.length; i++) {
+                const student = excelData[i];
+                const studentData = {
+                    fullname: student[fullname_index],
+                    internal_id: internal_id ? student[internal_id_index] : '',
+                    contact_phone: String(student[contact_phone_index])
+                };
+                const createdStudent = await prisma.student.create({
+                    data: studentData
+                });
+                if (createdStudent) {
+                    createdStudents.push(createdStudent);
+                }
+            }
+            return res.status(201).json({
+                result: true,
+                message: 'Students created',
+                createdStudents
+            });
+        }
+        catch (error) {
+            console.log(error);
+            res.status(500).json({
+                result: false,
+                message: 'Internal server error'
+            });
+        }
+    },
     update: async (req, res) => {
         try {
             const id = parseInt(req.params.student_id);
@@ -102,8 +150,8 @@ const StudentsController = {
                     message: 'Id is required',
                 });
             }
-            const { manual_id, fullname, contact_phone } = req.body;
-            if (manual_id === undefined || !fullname || contact_phone === undefined) {
+            const { internal_id, fullname, contact_phone } = req.body;
+            if (internal_id === undefined || !fullname || contact_phone === undefined) {
                 return res.status(400).json({
                     result: false,
                     message: 'All fields are required'
@@ -114,7 +162,7 @@ const StudentsController = {
                     id: id
                 },
                 data: {
-                    manual_id,
+                    internal_id,
                     fullname,
                     contact_phone,
                     updatedAt: new Date()

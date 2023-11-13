@@ -3,4 +3,5 @@ type Student = {
   fullname: string
 }
 
+
 export type { Student }
