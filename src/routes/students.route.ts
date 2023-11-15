@@ -1,4 +1,6 @@
 import express from 'express';
+import multer from 'multer';
+
 import StudentsController from '../controllers/students.controller.js';
 import passport from '../middlewares/auth.mid.js';
 
@@ -15,6 +17,13 @@ studentsRouter.post(
   passport.authenticate('userJWT', { session: false }),
   StudentsController.register
 );
+
+studentsRouter.post(
+  '/students/excel-import',
+  passport.authenticate('userJWT', { session: false }),
+  multer().single('file'),
+  StudentsController.excelImport
+)
 
 studentsRouter.put(
   '/students/update/:student_id',
