@@ -102,6 +102,8 @@ const StudentsController = {
       const file = req.file
       const { fullname, internal_id, contact_phone } = req.body
 
+      console.log(file)
+
       if (!file || !fullname || !contact_phone) {
         return res.status(400).json({
           result: false,
@@ -117,6 +119,8 @@ const StudentsController = {
       const fullname_index = columns.findIndex((col) => col.trim() === fullname);
       const internal_id_index = internal_id ? columns.findIndex((col) => col.trim() === internal_id) : -1;
       const contact_phone_index = columns.findIndex((col) => col.trim() === contact_phone);
+
+      console.log(excelData)
 
       const createdStudents = [];
       for (let i = 1; i < excelData.length; i++) {

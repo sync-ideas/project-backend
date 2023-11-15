@@ -20,8 +20,8 @@ studentsRouter.post(
 
 studentsRouter.post(
   '/students/excel-import',
-  //passport.authenticate('userJWT', { session: false }),
-  multer().single('excelFile'),
+  passport.authenticate('userJWT', { session: false }),
+  multer().single('file'),
   StudentsController.excelImport
 )
 
