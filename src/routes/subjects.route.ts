@@ -23,7 +23,7 @@ subjectsRouter.delete(
 )
 
 subjectsRouter.get(
-  '/subjects', // '/subjects' para traer todos los subjects y '/subjects?course=Secundaria' para traer los subjects filtadas por course
+  '/subjects', // '/subjects' para traer todos los subjects y '/subjects?courseId=4' para traer los subjects filtadas por course
   passport.authenticate('adminJWT', { session: false }),
   SubjectsController.getAll
 )
