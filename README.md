@@ -1,6 +1,7 @@
 ![Badge en Desarollo](https://img.shields.io/badge/STATUS-DEVELOPING-yellow)
 
-# ASISTENCIAS BACKEND 
+# ASISTENCIAS BACKEND
+[![My Skills](https://skillicons.dev/icons?i=js,nodejs,ts,express,postgres,prisma,git,github,postman,vscode&perline=5)](https://skillicons.dev)
 ## CREATE
 - npm install --save-dev typescript @types/express @types/node ts-node-dev
 - npx tsc --init
