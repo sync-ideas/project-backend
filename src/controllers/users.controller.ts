@@ -398,8 +398,8 @@ const UsersController = {
     }
   },
 
-  update: async (req: Request, res: Response) => {
-    const id = parseInt(req.params.user_id as string);
+  update: async (req: any, res: Response) => {
+    const id = parseInt(req.user.id as string);
     const { fullname, email } = req.body;
     if (!id) {
       return res.status(400).json({

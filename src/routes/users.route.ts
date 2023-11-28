@@ -48,7 +48,7 @@ usersRouter.put(
 );
 
 usersRouter.put(
-  '/users/update/:user_id',
+  '/users/update',
   passport.authenticate('userJWT', { session: false }),
   UsersController.update
 )
