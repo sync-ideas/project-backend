@@ -47,4 +47,15 @@ usersRouter.put(
   UsersController.assignRole
 );
 
+usersRouter.put(
+  '/users/update/:user_id',
+  passport.authenticate('userJWT', { session: false }),
+  UsersController.update
+)
+
+usersRouter.get(
+  '/users/update-email/:token/:email',
+  UsersController.updateEmail
+)
+
 export default usersRouter

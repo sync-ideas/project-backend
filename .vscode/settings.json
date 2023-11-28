@@ -1,6 +1,7 @@
 {
   "conventionalCommits.scopes": [
     "Students",
-    "QR"
+    "QR",
+    "User"
   ]
 }

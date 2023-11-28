@@ -396,7 +396,149 @@ const UsersController = {
         message: message
       })
     }
-  }
+  },
+
+  update: async (req: Request, res: Response) => {
+    const id = parseInt(req.params.user_id as string);
+    const { fullname, email } = req.body;
+    if (!id) {
+      return res.status(400).json({
+        result: false,
+        message: 'Id is required',
+      });
+    }
+    if (!fullname && !email) {
+      return res.status(400).json({
+        result: false,
+        message: 'At least one field is required',
+      });
+    }
+    try {
+      let user, updated
+      if (fullname) {
+        user = await prisma.user.update({
+          where: {
+            id: id,
+          },
+          data: {
+            fullname: fullname,
+            updatedAt: new Date()
+          },
+        });
+        if (user) {
+          updated = {
+            fullname: fullname
+          }
+        } else {
+          return res.status(400).json({
+            result: false,
+            message: 'User not found',
+          });
+        }
+      }
+
+      if (email) {
+        updated = {
+          ...updated,
+          email: email
+        }
+        if (!user) {
+          user = await prisma.user.findFirst({
+            where: {
+              id: id,
+            }
+          });
+        }
+        if (user?.email === email) {
+          return res.status(400).json({
+            result: false,
+            message: 'Email is the same.',
+          });
+        }
+        if (!user) {
+          return res.status(400).json({
+            result: false,
+            message: 'User not found',
+          });
+        }
+        const token = jwt.sign({ email: user.email }, jwt_secret, { expiresIn: '1h' });
+        const emailResponse = await sendEmail({
+          from: '"Asistencias - Administrador de Asistencias"',
+          to: email,
+          subject: 'Asistencias - Confirma tu nuevo email',
+          text: 'Confirma tu nuevo email en Asistencias',
+          html: `<p>Hola ${fullname}, Confirma tu nuevo email en Asistencias</p>
+                <p>
+                  Tu email se actualizara a ${email}, solo debes confirmarlo
+                  en el siguiente enlace: <a href="${backend_url}/api/users/update-email/${token}/${email}">Confirmar email</a>
+                </p>
+                <p>Si no es tu cuenta puedes ignorar el mensaje.</p>`,
+        });
+        if (!emailResponse.result) {
+          return res.status(500).json({
+            result: false,
+            message: 'Email not sent, check your email settings',
+          })
+        }
+      }
+
+      return res.status(202).json({
+        result: true,
+        message: 'User updated successfully',
+        updated
+      })
+    } catch (error) {
+      res.status(500).json({
+        result: false,
+        message: 'Internal server error'
+      })
+    }
+  },
+
+  updateEmail: async (req: Request, res: Response) => {
+    const { token, email } = req.params;
+    if (!token) {
+      return res.status(400).json({
+        result: false,
+        message: 'Token is required',
+      });
+    }
+    if (!email) {
+      return res.status(400).json({
+        result: false,
+        message: 'Email is required',
+      });
+    }
+    try {
+      const decodedToken = jwt.verify(token, jwt_secret) as { email: string } | null;
+      const userUpdated = await prisma.user.update({
+        where: {
+          email: decodedToken?.email || null,
+        },
+        data: {
+          email: email,
+          updatedAt: new Date()
+        },
+      })
+      if (userUpdated) {
+        return res.status(202).json({
+          result: true,
+          message: 'Email updated successfully',
+        })
+      }
+      res.status(500).json({
+        result: false,
+        message: 'Internal server error'
+      })
+
+    } catch (error) {
+      res.status(500).json({
+        result: false,
+        message: 'Internal server error'
+      })
+    }
+  },
+
 
 };
 
