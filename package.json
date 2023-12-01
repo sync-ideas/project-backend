@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon --exec ts-node --esm src/app.ts",
+    "dev": "tsc &nodemon --exec ts-node --esm src/app.ts",
     "build": "tsc",
     "start": "node build/app.js",
     "migrate": "prisma migrate dev",
