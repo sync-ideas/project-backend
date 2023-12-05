@@ -1,4 +1,4 @@
-import QrGenerator from '../handlers/qrGenerator.handler.js';
+import QrHandler from '../handlers/qr.handler.js';
 import { Readable } from 'stream';
 const QRController = {
     async create(req, res) {
@@ -10,9 +10,8 @@ const QRController = {
                     response: false
                 });
             }
-            const generatedPDF = await QrGenerator.create(data);
+            const generatedPDF = await QrHandler.create(data);
             if (generatedPDF) {
-                //const pdfBuffer = Buffer.from(generatedPDF);
                 const pdfBuffer = new Readable({
                     read() {
                         this.push(Buffer.from(generatedPDF));
@@ -21,7 +20,6 @@ const QRController = {
                 });
                 res.setHeader('Content-Type', 'application/pdf; charset=utf-8');
                 res.setHeader('Content-Disposition', 'inline; filename=generated.pdf');
-                //return res.status(200).send(pdfBuffer);
                 pdfBuffer.pipe(res);
             }
             else {

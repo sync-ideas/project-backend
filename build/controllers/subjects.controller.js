@@ -115,14 +115,14 @@ const SubjectsController = {
         }
     },
     getAll: async (req, res) => {
-        const course = req.query.course;
+        const courseID = parseInt(req.query.courseId);
         let courseFilter;
-        console.log(course);
+        console.log(courseID);
         try {
-            if (course) {
+            if (courseID) {
                 courseFilter = await prisma.course.findFirst({
                     where: {
-                        level: course, // asumiendo que el level del curso es único
+                        id: courseID,
                     },
                 });
                 if (!courseFilter) {
@@ -141,6 +141,7 @@ const SubjectsController = {
             if (subjects && subjects.length > 0) {
                 return res.status(200).json({
                     result: true,
+                    message: 'Subjects found',
                     subjects,
                 });
             }
@@ -160,7 +161,9 @@ const SubjectsController = {
     },
     assignCourse: async (req, res) => {
         const id = parseInt(req.params.subject_id);
-        const { course } = req.body;
+        console.log(req.params);
+        const { courseID } = req.body;
+        const course = parseInt(courseID);
         let courseFilter;
         if (!id) {
             return res.status(400).json({
@@ -168,23 +171,23 @@ const SubjectsController = {
                 message: 'Id is required',
             });
         }
-        if (!course) {
+        if (!courseID) {
             return res.status(400).json({
                 result: false,
                 message: 'Course field is required',
             });
         }
-        if (course) {
+        if (courseID) {
             courseFilter = await prisma.course.findFirst({
                 where: {
-                    level: course, // asumiendo que el level del curso es único
+                    id: course, // asumiendo que el level del curso es único
                 },
             });
         }
         if (!courseFilter) {
             return res.status(400).json({
                 result: false,
-                message: `${course} not found`,
+                message: `Course not found`,
             });
         }
         try {
