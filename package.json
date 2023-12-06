@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsc &nodemon --exec ts-node --esm src/app.ts",
-    "build": "tsc",
+    "build": "prisma generate && tsc",
     "start": "node build/app.js",
     "migrate": "prisma migrate dev",
     "test": "tsc & mocha test/**/*.spec.js --exit"

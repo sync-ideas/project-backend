@@ -53,8 +53,8 @@ const UsersController = {
     },
     register: async (req, res) => {
         try {
-            const { email, fullname, password } = req.body;
-            if (!email || !fullname || !password) {
+            const { email, fullname, username, password } = req.body;
+            if (!email || !fullname || !username || !password) {
                 return res.status(400).json({
                     message: 'All fields are required.',
                     result: false
@@ -71,12 +71,13 @@ const UsersController = {
                     message: 'Email already exists',
                 });
             }
-            const newPassword = await bcrypt.hash(password, passwordSalt);
+            const hashPassword = await bcrypt.hash(password, passwordSalt);
             user = await prisma.user.create({
                 data: {
                     email,
                     fullname,
-                    password: newPassword,
+                    username,
+                    password: hashPassword,
                 },
             });
             const token = jwt.sign({ email: email }, jwt_secret, { expiresIn: '1h' });
@@ -387,67 +388,46 @@ const UsersController = {
     },
     update: async (req, res) => {
         const id = parseInt(req.user.id);
-        const { fullname, email } = req.body;
+        const { fullname, username, email } = req.body;
         if (!id) {
             return res.status(400).json({
                 result: false,
                 message: 'Id is required',
             });
         }
-        if (!fullname && !email) {
+        if (!fullname && !username && !email) {
             return res.status(400).json({
                 result: false,
                 message: 'At least one field is required',
             });
         }
         try {
-            let user, updated;
-            if (fullname) {
-                user = await prisma.user.update({
-                    where: {
-                        id: id,
-                    },
-                    data: {
-                        fullname: fullname,
-                        updatedAt: new Date()
-                    },
+            const user = await prisma.user.findUnique({
+                where: {
+                    id: id,
+                },
+            });
+            if (!user) {
+                return res.status(400).json({
+                    result: false,
+                    message: 'User not found',
                 });
-                if (user) {
-                    updated = {
-                        fullname: fullname
-                    };
-                }
-                else {
-                    return res.status(400).json({
-                        result: false,
-                        message: 'User not found',
-                    });
-                }
+            }
+            const updated = {};
+            if (fullname) {
+                updated.fullname = fullname;
+            }
+            if (username) {
+                updated.username = username;
             }
             if (email) {
-                updated = {
-                    ...updated,
-                    email: email
-                };
-                if (!user) {
-                    user = await prisma.user.findFirst({
-                        where: {
-                            id: id,
-                        }
-                    });
-                }
-                if (user?.email === email) {
+                if (user.email === email) {
                     return res.status(400).json({
                         result: false,
                         message: 'Email is the same.',
                     });
                 }
-                if (!user) {
-                    return res.status(400).json({
-                        result: false,
-                        message: 'User not found',
-                    });
-                }
+                updated.email = email;
                 const token = jwt.sign({ email: user.email }, jwt_secret, { expiresIn: '1h' });
                 const emailResponse = await sendEmail({
                     from: '"Asistencias - Administrador de Asistencias"',
@@ -455,11 +435,11 @@ const UsersController = {
                     subject: 'Asistencias - Confirma tu nuevo email',
                     text: 'Confirma tu nuevo email en Asistencias',
                     html: `<p>Hola ${fullname}, Confirma tu nuevo email en Asistencias</p>
-                <p>
-                  Tu email se actualizara a ${email}, solo debes confirmarlo
-                  en el siguiente enlace: <a href="${backend_url}/api/users/update-email/${token}/${email}">Confirmar email</a>
-                </p>
-                <p>Si no es tu cuenta puedes ignorar el mensaje.</p>`,
+              <p>
+                Tu email se actualizara a ${email}, solo debes confirmarlo
+                en el siguiente enlace: <a href="${backend_url}/api/users/update-email/${token}/${email}">Confirmar email</a>
+              </p>
+              <p>Si no es tu cuenta puedes ignorar el mensaje.</p>`,
                 });
                 if (!emailResponse.result) {
                     return res.status(500).json({
@@ -468,10 +448,19 @@ const UsersController = {
                     });
                 }
             }
+            const updatedUser = await prisma.user.update({
+                where: {
+                    id: id,
+                },
+                data: {
+                    ...updated,
+                    updatedAt: new Date()
+                },
+            });
             return res.status(202).json({
                 result: true,
                 message: 'User updated successfully',
-                updated
+                updated: updatedUser
             });
         }
         catch (error) {
