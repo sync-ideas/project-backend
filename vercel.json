@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "buildCommand": "npm run build",
   "builds": [
     {
       "src": "build/app.js",
@@ -11,8 +12,5 @@
       "src": "/(.*)",
       "dest": "build/app.js"
     }
-  ],
-  "scripts": {
-    "build": "prisma generate && tsc"
-  }
+  ]
 }
