@@ -34,7 +34,7 @@ const CoursesController = {
     try {
       const { level, number, letter } = req.body;
       if (!level || !number || !letter) {
-        return res.status(400).json({ message: "Level, number and letter is required" });
+        return res.status(400).json({ message: "Fields level, number and letter is required" });
       }
       let course = await prisma.course.findFirst({
         where: {

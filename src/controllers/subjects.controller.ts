@@ -1,23 +1,24 @@
 import { Request, Response } from 'express-serve-static-core';
 import { prisma } from '../config/prisma.client.js';
 
+
 const SubjectsController = {
 
   create: async (req: Request, res: Response) => {
     try {
-      const { name, level, course } = req.body;
-      if (!name || !level) {
+      const { name, courseId } = req.body;
+      if (!name || !courseId) {
         return res
           .status(400)
           .json({
             result: false,
-            message: 'All fields are required'
+            message: 'Fields name and courseId are required',
           });
       } else {
         const subject = await prisma.subject.findFirst({
           where: {
             name,
-            level,
+            courseId,
           }
         });
         if (subject) {
@@ -30,8 +31,21 @@ const SubjectsController = {
       const subject = await prisma.subject.create({
         data: {
           name,
-          level,
-          courseId: course,
+          courseId,
+        },
+      });
+
+      // Actualiza el curso para añadir el nuevo subject
+      await prisma.course.update({
+        where: {
+          id: courseId,
+        },
+        data: {
+          subjects: {
+            connect: {
+              id: subject.id,
+            },
+          },
         },
       });
 
@@ -44,7 +58,6 @@ const SubjectsController = {
       return res.status(500).json({ error: error.message });
     }
   },
-  //!Error 404
 
   update: async (req: Request, res: Response) => {
     try {
@@ -55,25 +68,70 @@ const SubjectsController = {
           message: 'Id is required',
         });
       }
-      const { name, level, teacherId } = req.body;
-      if (name === undefined || !level || teacherId === undefined) {
+      const { name, courseId, teacherId } = req.body;
+      if (!name || !courseId) {
         return res.status(400).json({
           result: false,
-          message: 'All fields are required',
+          message: 'Fields name and courseId are required',
         });
       }
+
+      // Obtener el courseId actual
+      const currentSubject = await prisma.subject.findUnique({
+        where: {
+          id: id,
+        },
+        select: {
+          courseId: true,
+        }
+      });
+
+      // Actualizar el subject
       const subject = await prisma.subject.update({
         where: {
           id: id,
         },
         data: {
           name,
-          level,
-          teacherId,
+          courseId,
+          teacherId: teacherId ? teacherId : null,
           updatedAt: new Date(),
         },
       });
+
       if (subject) {
+        // Si el courseId ha cambiado, actualiza los subjects de los cursos
+        if (currentSubject && currentSubject.courseId !== courseId) {
+          await prisma.$transaction([
+            // Desconecta el subject del curso anterior
+            prisma.course.update({
+              where: {
+                id: currentSubject.courseId,
+              },
+              data: {
+                subjects: {
+                  disconnect: {
+                    id: id,
+                  },
+                },
+              },
+            }),
+            // Conecta el subject al nuevo curso
+            prisma.course.update({
+              where: {
+                id: courseId,
+              },
+              data: {
+                subjects: {
+                  connect: {
+                    id: id,
+                  },
+                },
+              },
+            }),
+          ]);
+        }
+
         return res.status(200).json({
           result: true,
           message: 'Subject updated',
@@ -119,41 +177,45 @@ const SubjectsController = {
   },
 
   getAll: async (req: Request, res: Response) => {
-    const courseID = parseInt(req.query.courseId as string);
-    let courseFilter;
-    console.log(courseID);
+    const courseId = parseInt(req.query.courseId as string);
     try {
-      if (courseID) {
-        courseFilter = await prisma.course.findFirst({
+      if (courseId) {
+        const subjects = await prisma.subject.findMany({
           where: {
-            id: courseID,
+            active: true,
+            courseId,
           },
         });
-
-        if (!courseFilter) {
+        if (!subjects || subjects.length === 0) {
           return res.status(404).json({
             result: false,
-            message: 'Course not found',
+            message: 'Subjects not found',
+          });
+        } else {
+          return res.status(200).json({
+            result: true,
+            message: 'Subjects found',
+            subjects,
           });
         }
-      }
-      const subjects = await prisma.subject.findMany({
-        where: {
-          active: true,
-          course: courseFilter ? courseFilter : undefined,
-        },
-      });
-      if (subjects && subjects.length > 0) {
-        return res.status(200).json({
-          result: true,
-          message: 'Subjects found',
-          subjects,
+      } else {
+        const subjects = await prisma.subject.findMany({
+          where: {
+            active: true,
+          },
+        });
+        if (subjects && subjects.length > 0) {
+          return res.status(200).json({
+            result: true,
+            message: 'Subjects found',
+            subjects,
+          });
+        }
+        return res.status(404).json({
+          result: false,
+          message: 'Subjects not found',
         });
       }
-      return res.status(404).json({
-        result: false,
-        message: 'Subjects not found',
-      });
     } catch (error) {
       console.log(error);
       res.status(500).json({
@@ -163,11 +225,12 @@ const SubjectsController = {
       });
     }
   },
+
+  // ESTA FUNCION NO ES NECESARIA, SE PUEDE USAR UPDATE
   assignCourse: async (req: Request, res: Response) => {
     const id = parseInt(req.params.subject_id as string);
-    console.log(req.params)
-    const { courseID } = req.body;
-    const course = parseInt(courseID)
+    const { courseId } = req.body;
+    const course = parseInt(courseId)
     let courseFilter;
     if (!id) {
       return res.status(400).json({
@@ -175,13 +238,13 @@ const SubjectsController = {
         message: 'Id is required',
       });
     }
-    if (!courseID) {
+    if (!courseId) { // agregar que si no se envia el course el subject queda sin asignar
       return res.status(400).json({
         result: false,
         message: 'Course field is required',
       });
     }
-    if (courseID) {
+    if (courseId) {
       courseFilter = await prisma.course.findFirst({
         where: {
           id: course, // asumiendo que el level del curso es único

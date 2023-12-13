@@ -2,8 +2,8 @@ import { prisma } from '../config/prisma.client.js';
 const SubjectsController = {
     create: async (req, res) => {
         try {
-            const { name, level, course } = req.body;
-            if (!name || !level) {
+            const { name, courseId } = req.body;
+            if (!name || !courseId) {
                 return res
                     .status(400)
                     .json({
@@ -15,7 +15,7 @@ const SubjectsController = {
                 const subject = await prisma.subject.findFirst({
                     where: {
                         name,
-                        level,
+                        courseId,
                     }
                 });
                 if (subject) {
@@ -28,8 +28,7 @@ const SubjectsController = {
             const subject = await prisma.subject.create({
                 data: {
                     name,
-                    level,
-                    courseId: course,
+                    courseId,
                 },
             });
             return res.status(201).json({
@@ -51,8 +50,8 @@ const SubjectsController = {
                     message: 'Id is required',
                 });
             }
-            const { name, level, teacherId } = req.body;
-            if (name === undefined || !level || teacherId === undefined) {
+            const { name, courseId, teacherId } = req.body;
+            if (!name || !courseId || !teacherId) {
                 return res.status(400).json({
                     result: false,
                     message: 'All fields are required',
@@ -64,7 +63,7 @@ const SubjectsController = {
                 },
                 data: {
                     name,
-                    level,
+                    courseId,
                     teacherId,
                     updatedAt: new Date(),
                 },
@@ -115,40 +114,47 @@ const SubjectsController = {
         }
     },
     getAll: async (req, res) => {
-        const courseID = parseInt(req.query.courseId);
-        let courseFilter;
-        console.log(courseID);
+        const courseId = parseInt(req.query.courseId);
         try {
-            if (courseID) {
-                courseFilter = await prisma.course.findFirst({
+            if (courseId) {
+                const fillteredsubjects = await prisma.subject.findMany({
                     where: {
-                        id: courseID,
+                        active: true,
+                        courseId,
                     },
                 });
-                if (!courseFilter) {
+                if (!fillteredsubjects) {
                     return res.status(404).json({
                         result: false,
-                        message: 'Course not found',
+                        message: 'Subjects not found',
+                    });
+                }
+                else {
+                    return res.status(200).json({
+                        result: true,
+                        message: 'Subjects found',
+                        fillteredsubjects,
                     });
                 }
             }
-            const subjects = await prisma.subject.findMany({
-                where: {
-                    active: true,
-                    course: courseFilter ? courseFilter : undefined,
-                },
-            });
-            if (subjects && subjects.length > 0) {
-                return res.status(200).json({
-                    result: true,
-                    message: 'Subjects found',
-                    subjects,
+            else {
+                const subjects = await prisma.subject.findMany({
+                    where: {
+                        active: true,
+                    },
+                });
+                if (subjects && subjects.length > 0) {
+                    return res.status(200).json({
+                        result: true,
+                        message: 'Subjects found',
+                        subjects,
+                    });
+                }
+                return res.status(404).json({
+                    result: false,
+                    message: 'Subjects not found',
                 });
             }
-            return res.status(404).json({
-                result: false,
-                message: 'Subjects not found',
-            });
         }
         catch (error) {
             console.log(error);
@@ -171,7 +177,7 @@ const SubjectsController = {
                 message: 'Id is required',
             });
         }
-        if (!courseID) {
+        if (!courseID) { // agregar que si no se envia el course el subject queda sin asignar
             return res.status(400).json({
                 result: false,
                 message: 'Course field is required',
