@@ -6,7 +6,7 @@ const SubjectsController = {
 
   create: async (req: Request, res: Response) => {
     try {
-      const { name, courseId } = req.body;
+      const { name, courseId, teacherId, schelude, startSubject, endSubject, students } = req.body;
       if (!name || !courseId) {
         return res
           .status(400)
@@ -28,27 +28,55 @@ const SubjectsController = {
           });
         }
       }
+      const subjectData = {
+        name,
+        courseId,
+        teacherId: teacherId ? teacherId : null,
+        schelude: schelude ? schelude : null,
+        startSubjet: startSubject ? startSubject : null,
+        endSubject: endSubject ? endSubject : null,
+      }
+      if (students) {
+        subjectData['students'] = {
+          connect: students.map((studentId) => ({
+            id: studentId,
+          }))
+        }
+      }
       const subject = await prisma.subject.create({
-        data: {
-          name,
-          courseId,
-        },
+        data: subjectData,
       });
-
-      // Actualiza el curso para añadir el nuevo subject
-      await prisma.course.update({
-        where: {
-          id: courseId,
-        },
-        data: {
-          subjects: {
-            connect: {
-              id: subject.id,
-            },
-          },
-        },
-      });
-
+      /*
+            // Actualiza el curso para añadir el nuevo subject
+            await prisma.course.update({
+              where: {
+                id: courseId,
+              },
+              data: {
+                subjects: {
+                  connect: {
+                    id: subject.id,
+                  },
+                },
+              },
+            });
+      
+            // Actualiza el teacher para añadir el nuevo subject
+            if (teacherId) {
+              await prisma.user.update({
+                where: {
+                  id: teacherId,
+                },
+                data: {
+                  subjects: {
+                    connect: {
+                      id: subject.id,
+                    },
+                  },
+                },
+              });
+            }
+      */
       return res.status(201).json({
         result: true,
         subject: subject,
@@ -68,76 +96,37 @@ const SubjectsController = {
           message: 'Id is required',
         });
       }
-      const { name, courseId, teacherId } = req.body;
-      if (!name || !courseId) {
-        return res.status(400).json({
-          result: false,
-          message: 'Fields name and courseId are required',
-        });
-      }
 
-      // Obtener el courseId actual
-      const currentSubject = await prisma.subject.findUnique({
-        where: {
-          id: id,
-        },
-        select: {
-          courseId: true,
-        }
-      });
+      const { name, teacherId, courseId, schelude, startSubject, endSubject, active, students } = req.body;
+
+      // Preparar los datos para la actualización
+      const data: any = {
+        updatedAt: new Date(),
+      };
+
+      if (name !== undefined) data.name = name;
+      if (teacherId !== undefined) data.teacherId = teacherId;
+      if (courseId !== undefined) data.courseId = courseId;
+      if (schelude !== undefined) data.schelude = schelude;
+      if (startSubject !== undefined) data.startSubject = startSubject;
+      if (endSubject !== undefined) data.endSubject = endSubject;
+      if (active !== undefined) data.active = active;
+      if (students !== undefined) data.students = { set: students.map((studentId: number) => ({ id: studentId })) };
 
       // Actualizar el subject
       const subject = await prisma.subject.update({
         where: {
           id: id,
         },
-        data: {
-          name,
-          courseId,
-          teacherId: teacherId ? teacherId : null,
-          updatedAt: new Date(),
-        },
+        data,
       });
 
-      if (subject) {
-        // Si el courseId ha cambiado, actualiza los subjects de los cursos
-        if (currentSubject && currentSubject.courseId !== courseId) {
-          await prisma.$transaction([
-            // Desconecta el subject del curso anterior
-            prisma.course.update({
-              where: {
-                id: currentSubject.courseId,
-              },
-              data: {
-                subjects: {
-                  disconnect: {
-                    id: id,
-                  },
-                },
-              },
-            }),
-            // Conecta el subject al nuevo curso
-            prisma.course.update({
-              where: {
-                id: courseId,
-              },
-              data: {
-                subjects: {
-                  connect: {
-                    id: id,
-                  },
-                },
-              },
-            }),
-          ]);
-        }
+      return res.status(200).json({
+        result: true,
+        message: 'Subject updated',
+        subject,
+      });
 
-        return res.status(200).json({
-          result: true,
-          message: 'Subject updated',
-          subject,
-        });
-      }
     } catch (error) {
       console.log(error);
       res.status(500).json({
