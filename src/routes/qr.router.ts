@@ -5,7 +5,7 @@ const qrRouter = express.Router();
 
 qrRouter.post(
   '/qr/create',
-  //passport.authenticate('adminJWT', { session: false }),
+  passport.authenticate('adminJWT', { session: false }),
   QRController.create
 )
 
