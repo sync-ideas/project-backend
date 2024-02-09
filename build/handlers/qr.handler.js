@@ -1,11 +1,11 @@
 import { PDFDocument, rgb } from 'pdf-lib';
 import * as QRCode from 'qrcode';
 const QrHandler = {
-    async create(data) {
+    async create(data, pageSizeMm, qrSizeMm, marginMm) {
         const mm2dot = 2.8352; // 1 mm = 2.8352 dots
-        const pageSize = { width: 210 * mm2dot, height: 297 * mm2dot };
-        const qrSize = { width: 80 * mm2dot, height: 80 * mm2dot };
-        const margin = 20 * mm2dot;
+        const pageSize = { width: pageSizeMm.width * mm2dot, height: pageSizeMm.height * mm2dot };
+        const qrSize = { width: qrSizeMm.width * mm2dot, height: qrSizeMm.height * mm2dot };
+        const margin = marginMm * mm2dot;
         const horizontalStudents = Math.floor(pageSize.width / (qrSize.width + margin));
         const verticalStudents = Math.floor(pageSize.height / (qrSize.height + margin));
         const studentsPerPage = horizontalStudents * verticalStudents;

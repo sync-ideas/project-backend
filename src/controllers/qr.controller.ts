@@ -6,15 +6,15 @@ const QRController = {
 
   async create(req: Request, res: Response) {
     try {
-      const { data } = req.body
-      if (!data) {
+      const { data, pageSizeMm, qrSizeMm, marginMm } = req.body
+      if (!data || !pageSizeMm || !qrSizeMm || !marginMm) {
         return res.status(400).json({
-          msg: 'No data provided',
+          msg: 'No data or size provided',
           response: false
         })
       }
 
-      const generatedPDF = await QrHandler.create(data)
+      const generatedPDF = await QrHandler.create(data, pageSizeMm, qrSizeMm, marginMm);
       if (generatedPDF) {
         const pdfBuffer = new Readable({
           read() {
