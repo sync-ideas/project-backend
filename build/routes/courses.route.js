@@ -5,6 +5,7 @@ const coursesRouter = express.Router();
 coursesRouter.get('/courses', passport.authenticate('adminJWT', { session: false }), CoursesController.getAll);
 coursesRouter.post('/courses/register', passport.authenticate('adminJWT', { session: false }), CoursesController.create);
 coursesRouter.put('/courses/update/:course_id', passport.authenticate('adminJWT', { session: false }), CoursesController.update);
+coursesRouter.put('/courses/addsubjects/:course_id', passport.authenticate('adminJWT', { session: false }), CoursesController.addSubjects);
 coursesRouter.delete('/courses/delete/:course_id', passport.authenticate('adminJWT', { session: false }), CoursesController.delete);
 coursesRouter.get('/courses/deleted', passport.authenticate('adminJWT', { session: false }), CoursesController.getDeleted);
 coursesRouter.put('/courses/restore/:course_id', passport.authenticate('adminJWT', { session: false }), CoursesController.restore);

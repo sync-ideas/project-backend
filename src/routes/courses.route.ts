@@ -22,6 +22,12 @@ coursesRouter.put(
     CoursesController.update
 )
 
+coursesRouter.put(
+    '/courses/addsubjects/:course_id',
+    passport.authenticate('adminJWT', { session: false }),
+    CoursesController.addSubjects
+)
+
 coursesRouter.delete(
     '/courses/delete/:course_id',
     passport.authenticate('adminJWT', { session: false }),

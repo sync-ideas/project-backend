@@ -120,6 +120,45 @@ const CoursesController = {
             });
         }
     },
+    addSubjects: async (req, res) => {
+        const id = parseInt(req.params.course_id);
+        if (!id) {
+            return res.status(400).json({
+                result: false,
+                message: 'Id is required',
+            });
+        }
+        const { subjects } = req.body;
+        if (!subjects) {
+            return res.status(400).json({
+                result: false,
+                message: 'Must send subjects',
+            });
+        }
+        try {
+            subjects.forEach(async (subjectId) => {
+                await prisma.subject.update({
+                    where: {
+                        id: subjectId
+                    },
+                    data: {
+                        courseId: id
+                    }
+                });
+            });
+            return res.status(200).json({
+                result: true,
+                message: 'Subjects added successfully',
+            });
+        }
+        catch (error) {
+            console.log(error);
+            res.status(500).json({
+                result: false,
+                message: 'Internal server error',
+            });
+        }
+    },
     delete: async (req, res) => {
         try {
             const id = parseInt(req.params.course_id);

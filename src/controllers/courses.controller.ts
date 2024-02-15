@@ -123,6 +123,52 @@ const CoursesController = {
     }
   },
 
+  addSubjects: async (req: Request, res: Response) => {
+    const id = parseInt(req.params.course_id as string);
+    if (!id) {
+      return res.status(400).json({
+        result: false,
+        message: 'Id is required',
+      })
+    }
+    const { subjects } = req.body;
+    if (!subjects) {
+      return res.status(400).json({
+        result: false,
+        message: 'Must send subjects',
+      })
+    }
+    try {
+      subjects.forEach(async (subjectId: number) => {
+        try {
+          await prisma.subject.update({
+            where: {
+              id: subjectId
+            },
+            data: {
+              courseId: id
+            }
+          })
+        } catch (error) {
+          if (error.code === 'P2025' || error.code === 'P2003') {
+            console.log(`Subject with id ${subjectId} or course with id ${id} not found`);
+          } else {
+            throw error;
+          }
+        }
+      })
+      return res.status(200).json({
+        result: true,
+        message: 'Subjects added successfully',
+      })
+    } catch (error) {
+      res.status(500).json({
+        result: false,
+        message: 'Internal server error',
+      })
+    }
+  },
+
   delete: async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.course_id as string);
