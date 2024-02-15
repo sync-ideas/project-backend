@@ -134,6 +134,42 @@ const SubjectsController = {
             });
         }
     },
+    addStudents: async (req, res) => {
+        const subjectId = parseInt(req.params.subject_id);
+        const { students } = req.body;
+        if (!subjectId || !students) {
+            return res.status(400).json({
+                result: false,
+                message: 'Fields subjectId and students are required',
+            });
+        }
+        try {
+            students.forEach(async (studentId) => {
+                await prisma.subject.update({
+                    where: {
+                        id: subjectId
+                    },
+                    data: {
+                        students: {
+                            connect: {
+                                id: studentId
+                            }
+                        }
+                    }
+                });
+            });
+            return res.status(200).json({
+                result: true,
+                message: 'Students added successfully',
+            });
+        }
+        catch (error) {
+            res.status(500).json({
+                result: false,
+                message: 'Internal server error',
+            });
+        }
+    },
     delete: async (req, res) => {
         try {
             const id = parseInt(req.params.subject_id);
@@ -212,68 +248,6 @@ const SubjectsController = {
                 result: false,
                 message: 'Internal server error',
                 error: error,
-            });
-        }
-    },
-    // ESTA FUNCION NO ES NECESARIA, SE PUEDE USAR UPDATE
-    assignCourse: async (req, res) => {
-        const id = parseInt(req.params.subject_id);
-        const { courseId } = req.body;
-        const course = parseInt(courseId);
-        let courseFilter;
-        if (!id) {
-            return res.status(400).json({
-                result: false,
-                message: 'Id is required',
-            });
-        }
-        if (!courseId) { // agregar que si no se envia el course el subject queda sin asignar
-            return res.status(400).json({
-                result: false,
-                message: 'Course field is required',
-            });
-        }
-        if (courseId) {
-            courseFilter = await prisma.course.findFirst({
-                where: {
-                    id: course, // asumiendo que el level del curso es único
-                },
-            });
-        }
-        if (!courseFilter) {
-            return res.status(400).json({
-                result: false,
-                message: `Course not found`,
-            });
-        }
-        try {
-            const subject = await prisma.subject
-                .update({
-                where: {
-                    id: id,
-                },
-                data: {
-                    courseId: courseFilter.id,
-                    updatedAt: new Date(),
-                },
-            })
-                .course();
-            if (subject) {
-                return res.status(200).json({
-                    result: true,
-                    message: 'Course successfully assigned',
-                    subject,
-                });
-            }
-        }
-        catch (error) {
-            let message = 'Internal server error';
-            if (error.code === 'P2025') {
-                message = 'Subject not found';
-            }
-            res.status(500).json({
-                result: false,
-                message: message,
             });
         }
     },
