@@ -39,7 +39,8 @@ model Student {
   active         Boolean         @default(true)
   subjects       Subject[] // Relación muchos a muchos con Subject
   attendances    Attendance[] // Relación uno a muchos con Attendance
-  nonattendances Nonattendance[] // Relación uno a muchos con Attendance
+  nonattendances Nonattendance[] // Relación uno a muchos con NonAttendance
+  observations   Observations[] // Relación uno a muchos con Observatios
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @default(now()) @updatedAt
 
@@ -102,6 +103,26 @@ model Nonattendance {
   subjectId Int
   student   Student  @relation(fields: [studentId], references: [id])
   studentId Int
+  type      Type     @default(UNJUSTIFIED)
 
   @@map("nonattendances")
+}
+
+enum Type {
+  UNJUSTIFIED
+  JUSTIFIED
+  LATE
+  DELETED
+}
+
+// Modelo de observaciones
+model Observations {
+  id          Int      @id @default(autoincrement())
+  student     Student  @relation(fields: [studentId], references: [id])
+  studentId   Int
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("observations")
 }

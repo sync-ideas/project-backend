@@ -1,7 +1,6 @@
 import { Request, Response } from 'express-serve-static-core';
 import { prisma } from '../config/prisma.client.js';
 
-
 const SubjectsController = {
 
   create: async (req: Request, res: Response) => {
@@ -30,12 +29,14 @@ const SubjectsController = {
       }
       const subjectData = {
         name,
-        courseId,
-        teacherId: teacherId ? teacherId : null,
-        schelude: schelude ? schelude : null,
+        courseId: parseInt(courseId as string),
+        schelude: schelude ? schelude : [],
         startSubjet: startSubject ? startSubject : null,
         endSubject: endSubject ? endSubject : null,
       }
+
+      subjectData['teacherId'] = teacherId ? teacherId : null
+
       if (students) {
         subjectData['students'] = {
           connect: students.map((studentId) => ({
@@ -46,37 +47,7 @@ const SubjectsController = {
       const subject = await prisma.subject.create({
         data: subjectData,
       });
-      /*
-            // Actualiza el curso para añadir el nuevo subject
-            await prisma.course.update({
-              where: {
-                id: courseId,
-              },
-              data: {
-                subjects: {
-                  connect: {
-                    id: subject.id,
-                  },
-                },
-              },
-            });
-      
-            // Actualiza el teacher para añadir el nuevo subject
-            if (teacherId) {
-              await prisma.user.update({
-                where: {
-                  id: teacherId,
-                },
-                data: {
-                  subjects: {
-                    connect: {
-                      id: subject.id,
-                    },
-                  },
-                },
-              });
-            }
-      */
+
       return res.status(201).json({
         result: true,
         subject: subject,
@@ -86,6 +57,7 @@ const SubjectsController = {
       return res.status(500).json({ error: error.message });
     }
   },
+
 
   update: async (req: Request, res: Response) => {
     try {

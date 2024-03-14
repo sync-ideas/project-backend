@@ -8,6 +8,7 @@ import usersRouter from './routes/users.route.js';
 import coursesRouter from './routes/courses.route.js';
 import subjectsRouter from './routes/subjects.route.js';
 import qrRouter from './routes/qr.router.js';
+import attendanceRouter from './routes/attendance.route.js';
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use('/api', usersRouter);
 app.use('/api', coursesRouter)
 app.use('/api', subjectsRouter)
 app.use('/api', qrRouter)
+app.use('/api', attendanceRouter)
 
 // ---------- Start server ---------
 app.listen(PORT, () => {

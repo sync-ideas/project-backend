@@ -5,6 +5,7 @@
     "User",
     "Deployment",
     "Subjects",
-    "Courses"
+    "Courses",
+    "Attendance"
   ]
 }
