@@ -3,7 +3,7 @@ const AttendanceController = {
     register: async (req, res) => {
         try {
             const studentId = parseInt(req.params.studentId);
-            const subjectId = parseInt(req.params.subjectId);
+            const subjectId = 67; //parseInt(req.params.subjectId as string)
             if (!studentId || !subjectId) {
                 return res.status(400).json({
                     result: false,
@@ -12,12 +12,19 @@ const AttendanceController = {
             }
             const student = await prisma.student.findUnique({
                 where: {
-                    id: studentId
+                    id: studentId,
+                    active: true
                 },
                 select: {
                     fullname: true
                 }
             });
+            if (!student) {
+                return res.status(404).json({
+                    result: false,
+                    message: 'Student not found',
+                });
+            }
             await prisma.attendance.create({
                 data: {
                     date: new Date(),

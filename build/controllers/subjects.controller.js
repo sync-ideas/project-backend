@@ -25,7 +25,6 @@ const SubjectsController = {
                     });
                 }
             }
-            console.log("puta de mierda");
             const subjectData = {
                 name,
                 courseId: parseInt(courseId),
