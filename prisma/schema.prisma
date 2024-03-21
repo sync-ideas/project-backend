@@ -126,3 +126,13 @@ model Observations {
 
   @@map("observations")
 }
+
+// Cache para intentos de login
+model LoginAttempts {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  attempts  Int      @default(1)
+  createdAt DateTime @default(now())
+
+  @@map("loginattempts")
+}

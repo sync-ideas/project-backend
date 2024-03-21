@@ -40,7 +40,7 @@ const UsersController = {
             }
             const passwordMatch = await bcrypt.compare(password, user.password);
             if (!passwordMatch) {
-                await loginHelper.addAttemt(email);
+                //  await loginHelper.addAttemt(email);
                 return res.status(401).json({
                     result: false,
                     message: 'Incorrect password'
