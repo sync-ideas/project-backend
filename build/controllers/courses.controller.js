@@ -137,14 +137,24 @@ const CoursesController = {
         }
         try {
             subjects.forEach(async (subjectId) => {
-                await prisma.subject.update({
-                    where: {
-                        id: subjectId
-                    },
-                    data: {
-                        courseId: id
+                try {
+                    await prisma.subject.update({
+                        where: {
+                            id: subjectId
+                        },
+                        data: {
+                            courseId: id
+                        }
+                    });
+                }
+                catch (error) {
+                    if (error.code === 'P2025' || error.code === 'P2003') {
+                        console.log(`Subject with id ${subjectId} or course with id ${id} not found`);
                     }
-                });
+                    else {
+                        throw error;
+                    }
+                }
             });
             return res.status(200).json({
                 result: true,
@@ -152,7 +162,6 @@ const CoursesController = {
             });
         }
         catch (error) {
-            console.log(error);
             res.status(500).json({
                 result: false,
                 message: 'Internal server error',
