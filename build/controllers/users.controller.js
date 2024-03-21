@@ -2,6 +2,7 @@ import { prisma } from '../config/prisma.client.js';
 import * as bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import sendEmail from '../handlers/email.handler.js';
+import loginHelper from '../helpers/login.helper.js';
 import { jwt_secret, bcrypt_rounds, fronend_url, backend_url } from '../config/environment.js';
 const passwordSalt = bcrypt.genSaltSync(bcrypt_rounds);
 var Roles;
@@ -20,6 +21,12 @@ const UsersController = {
             });
         }
         try {
+            if (!await loginHelper.getAttempts(email)) {
+                return res.status(401).json({
+                    result: false,
+                    message: 'Too many attempts. Please try again later.'
+                });
+            }
             const user = await prisma.user.findUnique({
                 where: {
                     email,
@@ -33,12 +40,14 @@ const UsersController = {
             }
             const passwordMatch = await bcrypt.compare(password, user.password);
             if (!passwordMatch) {
+                await loginHelper.addAttemt(email);
                 return res.status(401).json({
                     result: false,
                     message: 'Incorrect password'
                 });
             }
             const token = jwt.sign({ id: user.id }, jwt_secret, { expiresIn: "36000s" });
+            loginHelper.deleteAttempts(email);
             return res.status(200).json({
                 token,
                 result: true
