@@ -128,7 +128,7 @@ model Observations {
 }
 
 // Cache para intentos de login
-model LoginAttempts {
+model Loginattempts {
   id        Int      @id @default(autoincrement())
   email     String   @unique
   attempts  Int      @default(1)

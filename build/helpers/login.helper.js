@@ -4,13 +4,13 @@ import { prisma } from "../config/prisma.client.js";
 const loginHelper = {
     getAttempts: async (email) => {
         try {
-            const attempts = await prisma.loginAttempts.findUnique({
+            const attempts = await prisma.loginattempts.findUnique({
                 where: {
                     email
                 }
             });
             if (!attempts) {
-                await prisma.loginAttempts.create({
+                await prisma.loginattempts.create({
                     data: {
                         email
                     }
@@ -18,7 +18,7 @@ const loginHelper = {
                 return true;
             }
             else if (attempts.createdAt < new Date(Date.now() - 1800000)) {
-                await prisma.loginAttempts.update({
+                await prisma.loginattempts.update({
                     where: {
                         email
                     }, data: {
@@ -29,7 +29,7 @@ const loginHelper = {
                 return true;
             }
             else if (attempts.attempts < 3) {
-                await prisma.loginAttempts.update({
+                await prisma.loginattempts.update({
                     where: {
                         email
                     }, data: {
@@ -55,7 +55,7 @@ const loginHelper = {
     },
     addAttemt: async (email) => {
         try {
-            await prisma.loginAttempts.update({
+            await prisma.loginattempts.update({
                 where: {
                     email
                 },
@@ -77,7 +77,7 @@ const loginHelper = {
     },
     deleteAttempts: async (email) => {
         try {
-            await prisma.loginAttempts.update({
+            await prisma.loginattempts.update({
                 where: {
                     email
                 }, data: {
