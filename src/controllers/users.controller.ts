@@ -30,7 +30,8 @@ const UsersController = {
       });
     }
     try {
-      if (!await loginHelper.getAttempts(email)) {
+      const remainingAttempts = await loginHelper.getAttempts(email);
+      if (remainingAttempts === -1) {
         return res.status(401).json({
           result: false,
           message: 'Too many attempts. Please try again later.'
@@ -49,10 +50,10 @@ const UsersController = {
       }
       const passwordMatch = await bcrypt.compare(password, user.password);
       if (!passwordMatch) {
-        //  await loginHelper.addAttemt(email);
         return res.status(401).json({
           result: false,
-          message: 'Incorrect password'
+          message: 'Incorrect password',
+          remainingAttempts
         });
       }
       const token = jwt.sign({ id: user.id }, jwt_secret, { expiresIn: "36000s" });
