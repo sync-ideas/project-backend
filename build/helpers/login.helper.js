@@ -15,9 +15,9 @@ const loginHelper = {
                         email
                     }
                 });
-                return true;
+                return 2;
             }
-            else if (attempts.createdAt < new Date(Date.now() - 1800000)) {
+            else if (attempts.createdAt < new Date(Date.now() - 1800000)) { // 30 minutes passed
                 await prisma.loginattempts.update({
                     where: {
                         email
@@ -26,7 +26,7 @@ const loginHelper = {
                         createdAt: new Date()
                     }
                 });
-                return true;
+                return 2;
             }
             else if (attempts.attempts < 3) {
                 await prisma.loginattempts.update({
@@ -36,10 +36,10 @@ const loginHelper = {
                         attempts: attempts.attempts + 1
                     }
                 });
-                return true;
+                return 2 - attempts.attempts;
             }
             else {
-                return false;
+                return -1;
             }
             //const timeout = cache.get(email + '_timeout') || false;
             //!timeout && cache.del(email + '_attempts');   // Clean attempts if there is no timeout
