@@ -84,13 +84,13 @@ model Subject {
 
 // Modelo de asistencias
 model Attendance {
-  id        Int      @id @default(autoincrement())
-  date      DateTime
-  subject   Subject  @relation(fields: [subjectId], references: [id])
-  subjectId Int
-  student   Student  @relation(fields: [studentId], references: [id])
-  studentId Int
-  registred Boolean  @default(false)
+  id         Int      @id @default(autoincrement())
+  date       DateTime
+  subject    Subject  @relation(fields: [subjectId], references: [id])
+  subjectId  Int
+  student    Student  @relation(fields: [studentId], references: [id])
+  studentId  Int
+  registered Boolean  @default(false)
 
   @@map("attendances")
 }

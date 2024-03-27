@@ -12,5 +12,11 @@
       "src": "/(.*)",
       "dest": "build/app.js"
     }
+  ],
+  "crons": [
+    {
+      "path": "/cron/updateAttendance",
+      "schedule": "0 0 * * *"
+    }
   ]
 }
