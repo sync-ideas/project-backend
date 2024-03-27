@@ -1,5 +1,5 @@
 import express from 'express';
-import AttendanceController from '../controllers/attendance.comtroller.js';
+import AttendanceController from '../controllers/attendance.controller.js';
 import passport from '../middlewares/auth.mid.js';
 const attendanceRouter = express.Router();
 attendanceRouter.post('/attendance/register/:studentId', ///:subjectId',
