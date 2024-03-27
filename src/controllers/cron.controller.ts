@@ -6,6 +6,10 @@ const CronController = {
 
   updateAttendance: async (_: Request, res: Response) => {
     console.log('Cron running')
+    res.status(200).json({
+      result: true,
+      message: 'Cron running',
+    })
 
     // Obtener estudiantes inactivos
     const inactiveStudents = await prisma.student.findMany({ select: { id: true }, where: { active: false } })
@@ -79,10 +83,6 @@ const CronController = {
 
     }
 
-    return res.status(200).json({
-      result: true,
-      message: 'Cron running',
-    })
   }
 
 

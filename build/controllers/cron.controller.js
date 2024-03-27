@@ -2,6 +2,10 @@ import { prisma } from '../config/prisma.client.js';
 const CronController = {
     updateAttendance: async (_, res) => {
         console.log('Cron running');
+        res.status(200).json({
+            result: true,
+            message: 'Cron running',
+        });
         // Obtener estudiantes inactivos
         const inactiveStudents = await prisma.student.findMany({ select: { id: true }, where: { active: false } });
         // Registrar asistencias de estudiantes inactivos
@@ -70,10 +74,6 @@ const CronController = {
                 }
             }
         }
-        return res.status(200).json({
-            result: true,
-            message: 'Cron running',
-        });
     }
 };
 export default CronController;
