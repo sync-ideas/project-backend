@@ -13,7 +13,7 @@ const CronController = {
     const idsToUpdate = inactiveStudents.map(student => student.id)
     await prisma.attendance.updateMany({
       where: {
-        studentId: {
+        "studentId": {
           in: idsToUpdate
         },
         registered: false
