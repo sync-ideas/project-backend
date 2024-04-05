@@ -6,6 +6,14 @@ const CronController = {
             result: true,
             message: 'Cron running',
         });
+        fetch('https://cron-jobs-6rn2.onrender.com');
+    },
+    updateAttendanceOLD: async (_, res) => {
+        console.log('Cron running');
+        res.status(200).json({
+            result: true,
+            message: 'Cron running',
+        });
         // Obtener estudiantes inactivos
         const inactiveStudents = await prisma.student.findMany({ select: { id: true }, where: { active: false } });
         // Registrar asistencias de estudiantes inactivos
