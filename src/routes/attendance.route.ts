@@ -11,4 +11,16 @@ attendanceRouter.post(
   AttendanceController.register
 );
 
+attendanceRouter.get(
+  '/attendance/getByStudent/:studentId',
+  passport.authenticate('userJWT', { session: false }),
+  AttendanceController.getNotAttendedByStudent
+);
+
+attendanceRouter.put(
+  '/attendance/update/:nonAttendanceId/:type',
+  passport.authenticate('userJWT', { session: false }),
+  AttendanceController.updateNotAttendedById
+)
+
 export default attendanceRouter

@@ -5,7 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "tsc & nodemon --exec ts-node --esm src/app.ts",
+    "dev": "tsc & nodemon --exec ts-node src/app.ts",
+    "dev2": "nodemon --exec npx tsx src/app.ts",
     "build": "prisma generate && tsc",
     "start": "node build/app.js",
     "migrate": "prisma migrate dev",
@@ -29,9 +30,10 @@
     "chai": "^4.3.10",
     "eslint": "^8.48.0",
     "mocha": "^10.2.0",
-    "nodemon": "^3.0.1",
+    "nodemon": "^3.1.0",
     "prisma": "^5.11.0",
     "supertest": "^6.3.3",
+    "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.2.2"
