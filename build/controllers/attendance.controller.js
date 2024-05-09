@@ -44,7 +44,7 @@ const AttendanceController = {
     getNotAttendedByStudent: async (req, res) => {
         try {
             const studentId = parseInt(req.params.studentId);
-            const attendances = await prisma.nonattendance.findMany({
+            const nonattendances = await prisma.nonattendance.findMany({
                 where: {
                     studentId
                 },
@@ -54,7 +54,7 @@ const AttendanceController = {
             });
             return res.status(200).json({
                 result: true,
-                attendances
+                nonattendances
             });
         }
         catch (error) {
