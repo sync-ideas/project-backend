@@ -45,7 +45,48 @@ const AttendanceController = {
       return res.status(500).json({ error: error.message });
     }
 
-  }
+  },
+
+  getNotAttendedByStudent: async (req: Request, res: Response) => {
+    try {
+      const studentId = parseInt(req.params.studentId as string)
+      const attendances = await prisma.nonattendance.findMany({
+        where: {
+          studentId
+        },
+        orderBy: {
+          date: 'asc'
+        }
+      })
+      return res.status(200).json({
+        result: true,
+        attendances
+      })
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  },
+
+  updateNotAttendedById: async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.nonAttendanceId as string)
+      const type = req.params.type as 'UNJUSTIFIED' | 'JUSTIFIED' | 'LATE' | 'DELETED'
+      const notAttended = await prisma.nonattendance.update({
+        where: {
+          id
+        },
+        data: {
+          type
+        }
+      })
+      return res.status(200).json({
+        result: true,
+        notAttended
+      })
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  },
 
 }
 

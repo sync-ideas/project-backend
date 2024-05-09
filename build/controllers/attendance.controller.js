@@ -40,7 +40,48 @@ const AttendanceController = {
         catch (error) {
             return res.status(500).json({ error: error.message });
         }
-    }
+    },
+    getNotAttendedByStudent: async (req, res) => {
+        try {
+            const studentId = parseInt(req.params.studentId);
+            const attendances = await prisma.nonattendance.findMany({
+                where: {
+                    studentId
+                },
+                orderBy: {
+                    date: 'asc'
+                }
+            });
+            return res.status(200).json({
+                result: true,
+                attendances
+            });
+        }
+        catch (error) {
+            return res.status(500).json({ error: error.message });
+        }
+    },
+    updateNotAttendedById: async (req, res) => {
+        try {
+            const id = parseInt(req.params.nonAttendanceId);
+            const type = req.params.type;
+            const notAttended = await prisma.nonattendance.update({
+                where: {
+                    id
+                },
+                data: {
+                    type
+                }
+            });
+            return res.status(200).json({
+                result: true,
+                notAttended
+            });
+        }
+        catch (error) {
+            return res.status(500).json({ error: error.message });
+        }
+    },
 };
 export default AttendanceController;
 //# sourceMappingURL=attendance.controller.js.map
