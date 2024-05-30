@@ -34,17 +34,14 @@ passport.use(
     },
     async (payload, done) => {
       try {
-
         const user = await prisma.user.findUnique({
           where: {
             id: payload.id,
           },
         });
-
         if (!user || user.role !== 'ADMIN') {
           return done(null, false);
         }
-
         return done(null, user);
       } catch (error) {
         return done(error);

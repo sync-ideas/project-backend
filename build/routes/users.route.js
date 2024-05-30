@@ -12,6 +12,7 @@ usersRouter.get('/users/:user_id', passport.authenticate('adminJWT', { session: 
 usersRouter.delete('/users/delete/:user_id', passport.authenticate('adminJWT', { session: false }), UsersController.delete);
 usersRouter.put('/users/assignrole/:user_id', passport.authenticate('adminJWT', { session: false }), UsersController.assignRole);
 usersRouter.put('/users/update', passport.authenticate('userJWT', { session: false }), UsersController.update);
+usersRouter.put('/users/update/:user_id', passport.authenticate('adminJWT', { session: false }), UsersController.updateByAdmin);
 usersRouter.get('/users/update-email/:token/:email', UsersController.updateEmail);
 export default usersRouter;
 //# sourceMappingURL=users.route.js.map

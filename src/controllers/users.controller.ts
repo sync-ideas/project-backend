@@ -509,6 +509,52 @@ const UsersController = {
     }
   },
 
+  updateByAdmin: async (req: any, res: Response) => {
+    const user_id = parseInt(req.params.user_id as string);
+    const { fullname, username, email, role } = req.body;
+    if (!user_id) {
+      return res.status(400).json({
+        result: false,
+        message: 'User id is required.',
+      });
+    }
+    if (!fullname && !username && !email && !role) {
+      return res.status(400).json({
+        result: false,
+        message: 'At least one field is required',
+      });
+    }
+    try {
+      const updated: any = {};
+      if (fullname) updated.fullname = fullname
+      if (username) updated.username = username;
+      if (role) updated.role = role;
+      if (email) updated.email = email;
+      const updatedUser = await prisma.user.update({
+        where: {
+          id: user_id,
+        },
+        data: {
+          ...updated,
+          updatedAt: new Date()
+        },
+      });
+
+      // falta enviar notificacion por email al usuario
+
+      return res.status(202).json({
+        result: true,
+        message: 'User updated successfully',
+        updated: { ...updatedUser, password: null }
+      })
+    } catch (error) {
+      res.status(500).json({
+        result: false,
+        message: 'Internal server error'
+      })
+    }
+  },
+
   updateEmail: async (req: Request, res: Response) => {
     const { token, email } = req.params;
     if (!token) {
