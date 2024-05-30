@@ -31,19 +31,20 @@ const UsersController = {
             const user = await prisma.user.findUnique({
                 where: {
                     email,
+                    active: true
                 },
             });
             if (!user) {
                 return res.status(404).json({
                     result: false,
-                    message: 'User not found'
+                    message: 'User not found or not activated.',
                 });
             }
             const passwordMatch = await bcrypt.compare(password, user.password);
             if (!passwordMatch) {
                 return res.status(401).json({
                     result: false,
-                    message: 'Incorrect password',
+                    message: 'Incorrect password.',
                     remainingAttempts
                 });
             }
@@ -51,13 +52,14 @@ const UsersController = {
             loginHelper.deleteAttempts(email);
             return res.status(200).json({
                 token,
-                result: true
+                result: true,
+                user: { ...user, password: null },
             });
         }
         catch (error) {
             return res.status(500).json({
                 result: false,
-                message: 'Internal server error'
+                message: 'Internal server error.'
             });
         }
     },
