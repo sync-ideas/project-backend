@@ -1,11 +1,9 @@
 import { prisma } from "../config/prisma.client.js";
 
-//import NodeCache from 'node-cache';
-//const cache = new NodeCache();
 
-const loginHelper = {
+const userHelper = {
 
-  getAttempts: async (email: string) => {
+  getLoginAttempts: async (email: string) => {
     try {
       const attempts = await prisma.loginattempts.findUnique({
         where: {
@@ -42,42 +40,13 @@ const loginHelper = {
         return -1
       }
 
-      //const timeout = cache.get(email + '_timeout') || false;
-      //!timeout && cache.del(email + '_attempts');   // Clean attempts if there is no timeout
-      //const attempts = cache.get(email + '_attempts') || 0;
-      //if (attempts === 3 && timeout) {
-      //  return false
-      //}
-      //return true
-
     } catch (error) {
       throw new Error(error);
     }
   },
 
-  addAttemt: async (email: string) => {
-    try {
-      await prisma.loginattempts.update({
-        where: {
-          email
-        },
-        data: {
-          attempts: {
-            increment: 1
-          }
-        }
-      })
-      //const attempts: number = cache.get(email + '_attempts') || 0;
-      //cache.set(email + '_attempts', attempts + 1, 1800);
-      //if (attempts + 1 === 1) { // First attempt?
-      //  cache.set(email + '_timeout', true, 1800);
-      //}
-    } catch (error) {
-      throw new Error(error);
-    }
-  },
 
-  deleteAttempts: async (email: string) => {
+  deleteLoginAttempts: async (email: string) => {
     try {
       await prisma.loginattempts.update({
         where: {
@@ -86,16 +55,33 @@ const loginHelper = {
           attempts: 0
         }
       })
-
-      //cache.del(email + '_attempts');
-      //cache.del(email + '_timeout');
     } catch (error) {
       throw new Error(error);
     }
+  },
+
+
+  getEmailSendCode: async (email: string) => {
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    await prisma.activation.create({
+      data: {
+        email,
+        code
+      }
+    })
+    return code
+  },
+
+  checkEmailCode: async (code: string) => {
+    const emailCodes = await prisma.activation.findUnique({ where: { code } })
+    if (!emailCodes) return { success: false, message: 'Invalid code.' }
+    if (emailCodes.createdAt < new Date(Date.now() - 60 * 60 * 1000)) {
+      await prisma.activation.delete({ where: { code } })
+      return { success: false, message: 'Code expired.' }
+    }
+    await prisma.activation.deleteMany({ where: { email: emailCodes.email } })
+    return { success: true, message: 'Email verified.', email: emailCodes.email }
   }
-
-
-
 }
 
-export default loginHelper
+export default userHelper

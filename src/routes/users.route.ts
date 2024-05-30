@@ -15,7 +15,7 @@ usersRouter.post(
 );
 
 usersRouter.get(
-  '/users/confirm/:token',
+  '/users/confirm/:code',
   UsersController.confirm
 );
 
