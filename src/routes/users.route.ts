@@ -35,6 +35,12 @@ usersRouter.get(
   UsersController.getUsers
 );
 
+usersRouter.get(
+  '/users/:user_id',
+  passport.authenticate('adminJWT', { session: false }),
+  UsersController.getById
+);
+
 usersRouter.delete(
   '/users/delete/:user_id',
   passport.authenticate('adminJWT', { session: false }),

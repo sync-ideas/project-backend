@@ -324,6 +324,48 @@ const UsersController = {
     }
   },
 
+  getById: async (req: Request, res: Response) => {
+    const id = parseInt(req.params.user_id as string);
+    if (!id) {
+      return res.status(400).json({
+        result: false,
+        message: 'Id is required',
+      });
+    }
+    try {
+      const user = await prisma.user.findUnique({
+        where: {
+          id: id
+        },
+        select: {
+          id: true,
+          createdAt: true,
+          fullname: true,
+          username: true,
+          email: true,
+          role: true
+        }
+      });
+      if (user) {
+        return res.status(200).json({
+          result: true,
+          message: 'User found.',
+          user
+        });
+      }
+      return res.status(404).json({
+        result: false,
+        message: 'User not found.',
+      });
+    } catch (error) {
+      console.log(error)
+      res.status(500).json({
+        result: false,
+        message: 'Internal server error'
+      })
+    }
+  },
+
   delete: async (req: Request, res: Response) => {
     const id = parseInt(req.params.user_id as string);
     if (!id) {
