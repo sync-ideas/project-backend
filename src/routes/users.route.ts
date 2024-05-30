@@ -15,7 +15,7 @@ usersRouter.post(
 );
 
 usersRouter.get(
-  '/users/confirm/:token',
+  '/users/confirm/:code',
   UsersController.confirm
 );
 
@@ -33,6 +33,12 @@ usersRouter.get(
   '/users',
   passport.authenticate('adminJWT', { session: false }),
   UsersController.getUsers
+);
+
+usersRouter.get(
+  '/users/:user_id',
+  passport.authenticate('adminJWT', { session: false }),
+  UsersController.getById
 );
 
 usersRouter.delete(

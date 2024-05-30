@@ -2,8 +2,9 @@ import { prisma } from '../config/prisma.client.js';
 import * as bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import sendEmail from '../handlers/email.handler.js';
-import loginHelper from '../helpers/login.helper.js';
-import { jwt_secret, bcrypt_rounds, fronend_url, backend_url } from '../config/environment.js';
+import emailTemplates from '../templates/email.templates.js';
+import userHelper from '../helpers/user.helper.js';
+import { jwt_secret, bcrypt_rounds, backend_url } from '../config/environment.js';
 const passwordSalt = bcrypt.genSaltSync(bcrypt_rounds);
 var Roles;
 (function (Roles) {
@@ -21,7 +22,7 @@ const UsersController = {
             });
         }
         try {
-            const remainingAttempts = await loginHelper.getAttempts(email);
+            const remainingAttempts = await userHelper.getLoginAttempts(email);
             if (remainingAttempts === -1) {
                 return res.status(401).json({
                     result: false,
@@ -49,7 +50,7 @@ const UsersController = {
                 });
             }
             const token = jwt.sign({ id: user.id }, jwt_secret, { expiresIn: "36000s" });
-            loginHelper.deleteAttempts(email);
+            userHelper.deleteLoginAttempts(email);
             return res.status(200).json({
                 token,
                 result: true,
@@ -92,36 +93,25 @@ const UsersController = {
                     password: hashPassword,
                 },
             });
-            const token = jwt.sign({ email: email }, jwt_secret, { expiresIn: '1h' });
+            const code = await userHelper.getEmailSendCode(email);
             if (user) {
-                // Por el momento el enlace es al backend, luego cuando se integre el frontend se enviara alli
-                const emailResponse = await sendEmail({
-                    from: '"Asistencias - Administrador de Asistencias"',
-                    to: email,
-                    subject: 'Asistencias - Confirma tu cuenta',
-                    text: 'Confirma tu cuenta en Asistencias',
-                    html: `<p>Hola ${fullname}, Confirma tu cuenta en Asistencias</p>
-              <p>
-                  Tu cuenta ya esta casi lista, solo debes confirmarla
-                  en el siguiente enlace: <a href="${backend_url}/api/users/confirm/${token}">Confirmar cuenta</a>
-              </p>
-              <p>Si no es tu cuenta puedes ignorar el mensaje.</p>`,
-                });
+                const template = await emailTemplates.confirmEmail(email, fullname, code);
+                const emailResponse = await sendEmail(template);
                 if (emailResponse.result) {
                     return res.status(201).json({
                         result: true,
                         message: 'User created successfully. Please check your email to activate your account.',
-                        user,
+                        user: { ...user, password: null },
                     });
                 }
                 return res.status(400).json({
                     result: false,
-                    message: 'Confirmation email not sent',
+                    message: 'Confirmation email not sent.',
                 });
             }
             return res.status(400).json({
                 result: false,
-                message: 'User not created',
+                message: 'User not created.',
             });
         }
         catch (error) {
@@ -134,38 +124,33 @@ const UsersController = {
     },
     // Confirmacion de cuenta: recibe token que fue enviado por email
     confirm: async (req, res) => {
-        const { token } = req.params;
-        if (!token || typeof token !== 'string') {
-            return res.status(400).json({
-                result: false,
-                message: 'Token is required',
-            });
-        }
-        const decodedToken = jwt.verify(token, jwt_secret);
-        const userConfirm = await prisma.user.findUnique({
-            where: {
-                email: decodedToken?.email || null,
-            },
-        });
-        if (!userConfirm) {
-            return res.status(404).json({
-                result: false,
-                message: 'Invalid token',
-            });
-        }
         try {
+            const { code } = req.params;
+            if (!code) {
+                return res.status(400).json({
+                    result: false,
+                    message: 'Code is required.',
+                });
+            }
+            const checkEmailCode = await userHelper.checkEmailCode(code);
+            if (!checkEmailCode.success) {
+                return res.status(400).json({
+                    result: false,
+                    message: checkEmailCode.message
+                });
+            }
             const user = await prisma.user.update({
                 where: {
-                    email: decodedToken.email,
+                    email: checkEmailCode.email
                 },
                 data: {
-                    active: true,
-                },
+                    active: true
+                }
             });
             return res.status(200).json({
                 result: true,
-                message: 'User account Activated successfully',
-                user,
+                message: 'Email confirmed successfully.',
+                user: { ...user, password: null }
             });
         }
         catch (error) {
@@ -183,28 +168,19 @@ const UsersController = {
             if (!email) {
                 return res.status(400).json({
                     result: false,
-                    message: 'Email is required'
+                    message: 'Email is required.'
                 });
             }
-            const user = await prisma.user.findUnique({
-                where: {
-                    email: email
-                }
-            });
+            const user = await prisma.user.findUnique({ where: { email } });
             if (user === null) {
                 return res.status(404).json({
                     result: false,
-                    message: 'User not found'
+                    message: 'User not found.'
                 });
             }
-            const token = jwt.sign({ email: email }, jwt_secret, { expiresIn: '1h' });
-            const emailResponse = await sendEmail({
-                from: 'Asistencias',
-                to: email,
-                subject: 'Recuperacion de contraseña',
-                text: `Por favor, haz click en el siguiente link para recuperar tu contraseña: ${fronend_url}/api/auth/reset?token=${token}`,
-                html: `<p>Por favor, haz click en el siguiente link para recuperar tu contraseña: <a href="${fronend_url}/api/auth/reset?token=${token}">${fronend_url}/api/auth/reset?token=${token}</a></p>`
-            });
+            const code = await userHelper.getEmailSendCode(email);
+            const template = await emailTemplates.forgotPassword(email, code);
+            const emailResponse = await sendEmail(template);
             if (!emailResponse.result) {
                 return res.status(400).json({
                     result: false,
@@ -227,45 +203,39 @@ const UsersController = {
     // Recupera la contraseña: recibe token y nueva contraseña. El token lo obtiene el frontend del email de recuperacion
     resetPassword: async (req, res) => {
         try {
-            const { token, password } = req.body;
-            if (!token || !password) {
+            const { email, code, password } = req.body;
+            if (!email || !code || !password) {
                 return res.status(400).json({
                     result: false,
-                    message: 'Token and password are required'
+                    message: 'Email, code and password are required!'
                 });
             }
-            const decodedToken = jwt.verify(token, jwt_secret);
-            const encryptedPassword = await bcrypt.hash(password, passwordSalt);
-            const user = await prisma.user.findUnique({
-                where: {
-                    email: decodedToken.email
-                }
-            });
-            if (user === null) {
-                return res.status(404).json({
+            const checkEmailCode = await userHelper.checkEmailCode(code);
+            if (!checkEmailCode.success) {
+                return res.status(400).json({
                     result: false,
-                    message: 'User not found'
+                    message: checkEmailCode.message
                 });
             }
-            const response = await prisma.user.update({
+            if (checkEmailCode.email !== email) {
+                return res.status(400).json({
+                    result: false,
+                    message: 'Invalid email.'
+                });
+            }
+            const hashPassword = await bcrypt.hash(password, passwordSalt);
+            const user = await prisma.user.update({
                 where: {
-                    email: decodedToken.email
+                    email: checkEmailCode.email
                 },
                 data: {
-                    password: encryptedPassword
+                    password: hashPassword
                 }
             });
-            if (response === null) {
-                return res.status(500).json({
-                    result: false,
-                    message: 'Internal server error'
-                });
-            }
-            delete response.password;
             return res.status(200).json({
                 result: true,
-                message: 'Password updated',
-                response
+                message: 'Password updated successfully',
+                user: { ...user, password: null }
             });
         }
         catch (error) {
@@ -300,6 +270,48 @@ const UsersController = {
             return res.status(404).json({
                 result: false,
                 message: 'Users not found'
+            });
+        }
+        catch (error) {
+            console.log(error);
+            res.status(500).json({
+                result: false,
+                message: 'Internal server error'
+            });
+        }
+    },
+    getById: async (req, res) => {
+        const id = parseInt(req.params.user_id);
+        if (!id) {
+            return res.status(400).json({
+                result: false,
+                message: 'Id is required',
+            });
+        }
+        try {
+            const user = await prisma.user.findUnique({
+                where: {
+                    id: id
+                },
+                select: {
+                    id: true,
+                    createdAt: true,
+                    fullname: true,
+                    username: true,
+                    email: true,
+                    role: true
+                }
+            });
+            if (user) {
+                return res.status(200).json({
+                    result: true,
+                    message: 'User found.',
+                    user
+                });
+            }
+            return res.status(404).json({
+                result: false,
+                message: 'User not found.',
             });
         }
         catch (error) {
