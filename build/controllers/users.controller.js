@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import sendEmail from '../handlers/email.handler.js';
 import emailTemplates from '../templates/email.templates.js';
 import userHelper from '../helpers/user.helper.js';
-import { jwt_secret, bcrypt_rounds, backend_url } from '../config/environment.js';
+import { jwt_secret, bcrypt_rounds } from '../config/environment.js';
 const passwordSalt = bcrypt.genSaltSync(bcrypt_rounds);
 var Roles;
 (function (Roles) {
@@ -81,7 +81,7 @@ const UsersController = {
             if (user) {
                 return res.status(401).json({
                     result: false,
-                    message: 'Email already exists',
+                    message: 'Email already exists.',
                 });
             }
             const hashPassword = await bcrypt.hash(password, passwordSalt);
@@ -100,7 +100,7 @@ const UsersController = {
                 if (emailResponse.result) {
                     return res.status(201).json({
                         result: true,
-                        message: 'User created successfully. Please check your email to activate your account.',
+                        message: 'User created successfully. User will check email to get the confirmation code to activate the account.',
                         user: { ...user, password: null },
                     });
                 }
@@ -122,7 +122,7 @@ const UsersController = {
             });
         }
     },
-    // Confirmacion de cuenta: recibe token que fue enviado por email
+    // Confirmacion de cuenta: recibe code que fue enviado por email
     confirm: async (req, res) => {
         try {
             const { code } = req.params;
@@ -200,7 +200,7 @@ const UsersController = {
             });
         }
     },
-    // Recupera la contraseña: recibe token y nueva contraseña. El token lo obtiene el frontend del email de recuperacion
+    // Recupera la contraseña: recibe code y nueva contraseña.
     resetPassword: async (req, res) => {
         try {
             const { email, code, password } = req.body;
@@ -412,17 +412,17 @@ const UsersController = {
     },
     update: async (req, res) => {
         const id = parseInt(req.user.id);
-        const { fullname, username, email } = req.body;
-        if (!id) {
+        const { user_id, fullname, username, email, password } = req.body;
+        if (!user_id) {
             return res.status(400).json({
                 result: false,
-                message: 'Id is required',
+                message: 'User id is required.',
             });
         }
-        if (!fullname && !username && !email) {
+        if (!fullname && !username && !email && !password) {
             return res.status(400).json({
                 result: false,
-                message: 'At least one field is required',
+                message: 'At least one field must be updated.',
             });
         }
         try {
@@ -437,54 +437,39 @@ const UsersController = {
                     message: 'User not found',
                 });
             }
-            const updated = {};
-            if (fullname) {
-                updated.fullname = fullname;
-            }
-            if (username) {
-                updated.username = username;
-            }
-            if (email) {
-                if (user.email === email) {
-                    return res.status(400).json({
-                        result: false,
-                        message: 'Email is the same.',
-                    });
-                }
-                updated.email = email;
-                const token = jwt.sign({ email: user.email }, jwt_secret, { expiresIn: '1h' });
-                const emailResponse = await sendEmail({
-                    from: '"Asistencias - Administrador de Asistencias"',
-                    to: email,
-                    subject: 'Asistencias - Confirma tu nuevo email',
-                    text: 'Confirma tu nuevo email en Asistencias',
-                    html: `<p>Hola ${fullname}, Confirma tu nuevo email en Asistencias</p>
-              <p>
-                Tu email se actualizara a ${email}, solo debes confirmarlo
-                en el siguiente enlace: <a href="${backend_url}/api/users/update-email/${token}/${email}">Confirmar email</a>
-              </p>
-              <p>Si no es tu cuenta puedes ignorar el mensaje.</p>`,
+            let updatedUser = {};
+            const updatedData = {};
+            if (fullname)
+                updatedData.fullname = fullname;
+            if (username)
+                updatedData.username = username;
+            if (email)
+                updatedData.email = email;
+            if (password)
+                updatedData.password = await bcrypt.hash(password, passwordSalt);
+            ;
+            if (user.role !== 'ADMIN' && user_id !== id) {
+                return res.status(400).json({
+                    result: false,
+                    message: 'You are not authorized to update this user.',
                 });
+            }
+            updatedUser = await prisma.user.update({ where: { id: user_id }, data: updatedData });
+            if (email) {
+                const code = await userHelper.getEmailSendCode(email);
+                const template = await emailTemplates.confirmEmail(email, fullname, code);
+                const emailResponse = await sendEmail(template);
                 if (!emailResponse.result) {
                     return res.status(500).json({
                         result: false,
-                        message: 'Email not sent, check your email settings',
+                        message: 'Verification email could not be sent.',
                     });
                 }
             }
-            const updatedUser = await prisma.user.update({
-                where: {
-                    id: id,
-                },
-                data: {
-                    ...updated,
-                    updatedAt: new Date()
-                },
-            });
             return res.status(202).json({
                 result: true,
                 message: 'User updated successfully',
-                updated: updatedUser
+                updated: { ...updatedUser, password: undefined },
             });
         }
         catch (error) {

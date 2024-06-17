@@ -59,6 +59,7 @@ usersRouter.put(
   UsersController.update
 )
 
+/*
 usersRouter.put(
   '/users/update/:user_id',
   passport.authenticate('adminJWT', { session: false }),
@@ -69,5 +70,5 @@ usersRouter.get(
   '/users/update-email/:token/:email',
   UsersController.updateEmail
 )
-
+*/
 export default usersRouter
