@@ -14,6 +14,12 @@ usersRouter.post(
   UsersController.register
 );
 
+usersRouter.post(
+  '/users/admin/register',
+  passport.authenticate('adminJWT', { session: false }),
+  UsersController.register
+);
+
 usersRouter.get(
   '/users/confirm/:code',
   UsersController.confirm
