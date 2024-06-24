@@ -87,6 +87,12 @@ const UsersController = {
                     message: 'Email or username already exists.',
                 });
             }
+            if (!userHelper.isValidEmail(email) || !userHelper.isValidPassword(password)) {
+                return res.status(400).json({
+                    result: false,
+                    message: 'Invalid email or password less than 8 characters.',
+                });
+            }
             const hashPassword = await bcrypt.hash(password, passwordSalt);
             const data = {
                 email,
