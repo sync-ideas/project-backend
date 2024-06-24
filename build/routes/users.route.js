@@ -4,6 +4,7 @@ import passport from '../middlewares/auth.mid.js';
 const usersRouter = express.Router();
 usersRouter.post('/users/login', UsersController.login);
 usersRouter.post('/users/register', UsersController.register);
+usersRouter.post('/users/admin/register', passport.authenticate('adminJWT', { session: false }), UsersController.register);
 usersRouter.get('/users/confirm/:code', UsersController.confirm);
 usersRouter.post('/users/forgotpassword', UsersController.forgotPassword);
 usersRouter.post('/users/resetpassword', UsersController.resetPassword);

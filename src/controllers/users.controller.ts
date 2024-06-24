@@ -81,26 +81,33 @@ const UsersController = {
           result: false
         });
       }
-      let user = await prisma.user.findUnique({
+      let user = await prisma.user.findFirst({
         where: {
-          email: email,
+          OR: [
+            { email: email },
+            { username: username }
+          ]
         },
-      });
+      })
+        ;
       if (user) {
         return res.status(401).json({
           result: false,
-          message: 'Email already exists.',
+          message: 'Email or username already exists.',
         });
       }
       const hashPassword = await bcrypt.hash(password, passwordSalt);
-      user = await prisma.user.create({
-        data: {
-          email,
-          fullname,
-          username,
-          password: hashPassword,
-        },
-      });
+      const data = {
+        email,
+        fullname,
+        username,
+        password: hashPassword,
+        active: false
+      }
+      if (req.user) data.active = true
+
+      user = await prisma.user.create({ data });
+
       const code = await userHelper.getEmailSendCode(email);
       if (user) {
         const template = await emailTemplates.confirmEmail(email, fullname, code);
