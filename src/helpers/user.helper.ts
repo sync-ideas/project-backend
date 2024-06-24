@@ -3,6 +3,15 @@ import { prisma } from "../config/prisma.client.js";
 
 const userHelper = {
 
+  isValidEmail: (email: string) => {
+    const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(email).toLowerCase());
+  },
+
+  isValidPassword: (password: string) => {
+    return password.length >= 8
+  },
+
   getLoginAttempts: async (email: string) => {
     try {
       const attempts = await prisma.loginattempts.findUnique({
@@ -44,7 +53,6 @@ const userHelper = {
       throw new Error(error);
     }
   },
-
 
   deleteLoginAttempts: async (email: string) => {
     try {
