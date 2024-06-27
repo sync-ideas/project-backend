@@ -14,9 +14,9 @@ import {
 const passwordSalt = bcrypt.genSaltSync(bcrypt_rounds);
 
 enum Roles {
-  ADMIN,
-  USER,
-  TEACHER,
+  ADMIN = 'ADMIN',
+  USER = 'USER',
+  TEACHER = 'TEACHER',
 }
 
 const UsersController = {
@@ -275,14 +275,16 @@ const UsersController = {
     try {
       const users = await prisma.user.findMany({
         where: {
-          active: true
+          //active: true
         },
         select: {
           id: true,
-          createdAt: true,
           fullname: true,
+          username: true,
           email: true,
-          role: true
+          role: true,
+          createdAt: true,
+          active: true
         }
       })
       if (users) {
@@ -320,11 +322,12 @@ const UsersController = {
         },
         select: {
           id: true,
-          createdAt: true,
           fullname: true,
           username: true,
           email: true,
-          role: true
+          role: true,
+          createdAt: true,
+          active: true
         }
       });
       if (user) {
@@ -506,14 +509,14 @@ const UsersController = {
 
   updateByAdmin: async (req: any, res: Response) => {
     const user_id = parseInt(req.params.user_id as string);
-    const { fullname, username, email, role } = req.body;
+    const { fullname, username, email, password, role, active } = req.body;
     if (!user_id) {
       return res.status(400).json({
         result: false,
         message: 'User id is required.',
       });
     }
-    if (!fullname && !username && !email && !role) {
+    if (!fullname && !username && !email && !role && !active && !password) {
       return res.status(400).json({
         result: false,
         message: 'At least one field is required',
@@ -523,8 +526,17 @@ const UsersController = {
       const updated: any = {};
       if (fullname) updated.fullname = fullname
       if (username) updated.username = username;
-      if (role) updated.role = role;
+      if (role) {
+        if (!(role in Roles))
+          return res.status(400).json({
+            result: false,
+            message: `${role} is not an assignable role, please choose one of the following: ${Object.values(Roles).join(', ')}`
+          });
+        else updated.role = role
+      }
       if (email) updated.email = email;
+      if (password) updated.password = await bcrypt.hash(password, passwordSalt);
+      if (active) updated.active = active;
       const updatedUser = await prisma.user.update({
         where: {
           id: user_id,
