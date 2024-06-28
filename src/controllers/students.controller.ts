@@ -1,5 +1,7 @@
 import { Request, Response } from 'express-serve-static-core';
 import { prisma } from '../config/prisma.client.js';
+import { Student } from '@prisma/client';
+import studentHelper from '../helpers/student.helper.js';
 import xlsx from 'xlsx';
 
 const StudentsController = {
@@ -53,30 +55,36 @@ const StudentsController = {
 
   register: async (req: Request, res: Response) => {
     try {
-      const { fullname, internal_id, contact_phone } = req.body
-      if (!fullname) {
-        return res.status(400).json({ message: 'A fullname is required' })
-      }
-      if (internal_id) {
-        const student = await prisma.student.findFirst({
-          where: {
-            internal_id
-          }
+      const checkData = await studentHelper.checkData(req.body)
+      if (!checkData.result) {
+        return res.status(400).json({
+          result: false,
+          message: checkData.message
         })
-        if (student) {
-          return res.status(400).json({
-            result: false,
-            message: 'Internal id already exists'
-          })
-        }
       }
+      const { internal_id, name, surname, password, personal_id, birthdate, contact_email, contact_phone, subject_id } = req.body
+
       const student = await prisma.student.create({
         data: {
-          fullname,
-          internal_id: internal_id || '',
-          contact_phone: contact_phone || ''
+          name,
+          surname,
+          personal_id: personal_id ? personal_id : null,
+          birthdate: birthdate ? new Date(birthdate) : null,
+          internal_id: internal_id ? internal_id : null,
+          contact_phone: contact_phone ? contact_phone : null,
+          contact_email: contact_email ? contact_email : null,
         }
       })
+
+      if (subject_id && student) {
+        await prisma.student.update({
+          where: { id: student.id },
+          data: {
+            subjects: { connect: subject_id }
+          }
+        })
+      }
+
       if (student) {
         return res.status(201).json({
           result: true,
@@ -99,48 +107,32 @@ const StudentsController = {
 
   excelImport: async (req: Request, res: Response) => {
     try {
-      const file = req.file
-      const { fullname, internal_id, contact_phone } = req.body
-
-      console.log(file)
-
-      if (!file || !fullname || !contact_phone) {
+      if (!req.file || !req.body.name || !req.body.surname) {
         return res.status(400).json({
           result: false,
-          message: 'File and column names are required'
+          message: 'File and column name and surname are required'
         })
       }
 
-      const workbook = xlsx.read(file.buffer, { type: 'buffer' });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      const excelData = xlsx.utils.sheet_to_json(worksheet, { header: 1 });
-      const columns: string[] = Array.isArray(excelData[0]) ? excelData[0] : [];
-      const fullname_index = columns.findIndex((col) => col.trim() === fullname);
-      const internal_id_index = internal_id ? columns.findIndex((col) => col.trim() === internal_id) : -1;
-      const contact_phone_index = columns.findIndex((col) => col.trim() === contact_phone);
+      const studentsStatus = []
+      const students = await studentHelper.registerFromExcel(req.file, { ...req.body })
 
-      console.log(excelData)
+      const promises = students.map(async (student: Student) => {
+        const checkData = await studentHelper.checkData(student)
+        if (!checkData.result) {
+          studentsStatus.push({ ...student, status: checkData.message })
+        } else {
+          studentsStatus.push({ ...student, status: 'created' })
+          await prisma.student.create({ data: student })
+        }
+        return await prisma.student.create({ data: student })
+      })
+      await Promise.all(promises)
 
-      const createdStudents = [];
-      for (let i = 1; i < excelData.length; i++) {
-        const student = excelData[i];
-        const studentData = {
-          fullname: student[fullname_index],
-          internal_id: internal_id ? student[internal_id_index] : '',
-          contact_phone: String(student[contact_phone_index])
-        }
-        const createdStudent = await prisma.student.create({
-          data: studentData
-        })
-        if (createdStudent) {
-          createdStudents.push(createdStudent)
-        }
-      }
       return res.status(201).json({
         result: true,
         message: 'Students created',
-        createdStudents
+        studentsStatus
       })
     } catch (error) {
       console.log(error)
@@ -161,23 +153,20 @@ const StudentsController = {
           message: 'Id is required',
         });
       }
-      const { internal_id, fullname, contact_phone } = req.body
-      if (internal_id === undefined || !fullname || contact_phone === undefined) {
-        return res.status(400).json({
-          result: false,
-          message: 'All fields are required'
-        })
+      const { internal_id, name, surname, password, personal_id, birthdate, contact_email, contact_phone } = req.body
+      const data = {
+        internal_id: internal_id || null,
+        name: name || null,
+        surname: surname || null,
+        password: password || null,
+        personal_id: personal_id || null,
+        birthdate: new Date(birthdate) || null,
+        contact_email: contact_email || null,
+        contact_phone: contact_phone || null
       }
       const student = await prisma.student.update({
-        where: {
-          id: id
-        },
-        data: {
-          internal_id,
-          fullname,
-          contact_phone,
-          updatedAt: new Date()
-        }
+        where: { id: id },
+        data
       })
       if (student) {
         return res.status(200).json({

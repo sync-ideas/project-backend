@@ -1,0 +1,156 @@
+datasource db {
+  url      = env("DATABASE_URL")
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Modelo de usuario
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  fullname  String
+  username  String
+  password  String
+  role      Role      @default(TEACHER)
+  active    Boolean   @default(false)
+  subjects  Subject[] // Relación uno a muchos con Subject
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+
+  @@map("users")
+}
+
+// Enumeración para roles
+enum Role {
+  ADMIN
+  USER
+  TEACHER
+}
+
+// Modelo de estudiante
+model Student {
+  id          Int     @id @default(autoincrement())
+  internal_id String?
+  fullname    String
+
+  //name           String?
+  //surname        String?
+  //password       String?
+  //personal_id    String?
+  //birthdate      DateTime?
+  //contact_email  String?
+
+  contact_phone  String?
+  active         Boolean         @default(true)
+  subjects       Subject[] // Relación muchos a muchos con Subject
+  attendances    Attendance[] // Relación uno a muchos con Attendance
+  nonattendances Nonattendance[] // Relación uno a muchos con NonAttendance
+  observations   Observations[] // Relación uno a muchos con Observatios
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @default(now()) @updatedAt
+
+  @@map("students")
+}
+
+// Modelo de curso
+model Course {
+  id        Int       @id @default(autoincrement())
+  level     String
+  number    Int
+  letter    String
+  subjects  Subject[] // Relación uno a muchos con Subject
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("courses")
+}
+
+// Modelo de asignatura
+model Subject {
+  id             Int             @id @default(autoincrement())
+  name           String
+  teacher        User?           @relation(fields: [teacherId], references: [id])
+  teacherId      Int?
+  course         Course?         @relation(fields: [courseId], references: [id])
+  courseId       Int?
+  schelude       Json[]
+  startSubjet    DateTime?
+  endSubject     DateTime?
+  active         Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  students       Student[] // Relación muchos a muchos con Student
+  attendances    Attendance[] // Relación uno a muchos con Attendance
+  nonattendances Nonattendance[] // Relación uno a muchos con Attendance
+
+  @@map("subjects")
+}
+
+// Modelo de asistencias
+model Attendance {
+  id         Int      @id @default(autoincrement())
+  date       DateTime
+  subject    Subject  @relation(fields: [subjectId], references: [id])
+  subjectId  Int
+  student    Student  @relation(fields: [studentId], references: [id])
+  studentId  Int
+  registered Boolean  @default(false)
+
+  @@map("attendances")
+}
+
+// Modelo de inasistencias
+model Nonattendance {
+  id        Int      @id @default(autoincrement())
+  date      DateTime
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  subjectId Int
+  student   Student  @relation(fields: [studentId], references: [id])
+  studentId Int
+  type      Type     @default(UNJUSTIFIED)
+
+  @@map("nonattendances")
+}
+
+enum Type {
+  UNJUSTIFIED
+  JUSTIFIED
+  LATE
+  DELETED
+}
+
+// Modelo de observaciones
+model Observations {
+  id          Int      @id @default(autoincrement())
+  student     Student  @relation(fields: [studentId], references: [id])
+  studentId   Int
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("observations")
+}
+
+// Cache para intentos de login
+model Loginattempts {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  attempts  Int      @default(1)
+  createdAt DateTime @default(now())
+
+  @@map("loginattempts")
+}
+
+// Table for activations
+model Activation {
+  id        Int      @id @default(autoincrement())
+  email     String
+  code      String   @unique
+  createdAt DateTime @default(now())
+
+  @@map("activations")
+}

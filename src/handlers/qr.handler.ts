@@ -45,11 +45,18 @@ const QrHandler = {
           borderWidth: 1
         })
 
-        page.drawText(data[i].fullname, {
+        page.drawText(data[i].name, {
           x: (qrSize.width * col + margin * (1 + col)),
           y: (margin + row * (qrSize.height + margin) + qrSize.height + 3),
           size: 12
         })
+
+        page.drawText(data[i].surname, {
+          x: (qrSize.width * col + margin * (1 + col) + qrSize.width / 2),
+          y: (margin + row * (qrSize.height + margin) + qrSize.height + 3),
+          size: 12
+        })
+
       }
 
     }

@@ -51,6 +51,7 @@ const CoursesController = {
                     level,
                     number,
                     letter,
+                    updatedAt: new Date(),
                 },
             });
             if (course) {

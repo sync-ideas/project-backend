@@ -34,7 +34,7 @@ const AttendanceController = {
             });
             return res.status(201).json({
                 result: true,
-                student: student.fullname,
+                student: student.name,
             });
         }
         catch (error) {
