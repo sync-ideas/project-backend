@@ -33,14 +33,16 @@ const SubjectsController = {
         schelude: schelude ? schelude : [],
         startSubjet: startSubject ? startSubject : null,
         endSubject: endSubject ? endSubject : null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }
 
-      subjectData['teacherId'] = teacherId ? teacherId : null
+      subjectData['teacherId'] = teacherId ? parseInt(teacherId as string) : null
 
       if (students) {
         subjectData['students'] = {
-          connect: students.map((studentId) => ({
-            id: studentId,
+          connect: students.map((studentId: number) => ({
+            id: parseInt(studentId as unknown as string),
           }))
         }
       }
